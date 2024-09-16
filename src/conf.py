@@ -49,24 +49,17 @@ if read_the_docs_build:
     config_src = os.path.join(docs_path, "GeosxConfig.hpp")
     config_dst = os.path.join(common_path, "GeosxConfig.hpp")
 
-    input_dirs = [
-        "coreComponents/common",
-        "coreComponents/dataRepository",
-        "coreComponents/fileIO",
-        "coreComponents/linearAlgebra",
-        "coreComponents/mesh",
-        "coreComponents/finiteElement/elementFormulations",
-        "coreComponents/finiteElement/kernelInterface",
-        "coreComponents/mesh/MeshFields.hpp",
-        "coreComponents/physicsSolvers",
-        "coreComponents/finiteVolume",
-        "coreComponents/functions",
-        "coreComponents/fieldSpecification",
-        "coreComponents/discretizationMethods",
-        "coreComponents/events",
-        "coreComponents/mainInterface"
-        ]
-        
+    input_dirs = ["coreComponents/common",
+                  "coreComponents/dataRepository",
+                  "coreComponents/fileIO",
+                  "coreComponents/linearAlgebra",
+                  "coreComponents/mesh",
+                  "coreComponents/managers",
+                  "coreComponents/finiteElement/kernelInterface",
+                  "coreComponents/mesh/MeshFields.hpp",
+                  "coreComponents/physicsSolvers/simplePDE/LaplaceFEMKernels.hpp",
+                  "coreComponents/physicsSolvers/solidMechanics",
+                  "coreComponents/finiteVolume"]
 
     # Write correct ReadtheDocs path and input directories
     shutil.copy(doxyfile_src, doxyfile_dst)
@@ -79,11 +72,9 @@ if read_the_docs_build:
     if not os.path.exists(config_dst):
         os.symlink(config_src, config_dst)
 
-    print("********** Running Doxygen in ReadtheDocs **********")
     # Call doxygen
-    from subprocess import run
-    run(['doxygen', doxyfile_dst])
-    print("********** Finished Running Doxygen in ReadtheDocs **********")
+    from subprocess import call
+    call(['doxygen', doxyfile_dst])
 
 
 # -- Project information -----------------------------------------------------
@@ -118,7 +109,8 @@ extensions = [
     'matplotlib.sphinxext.plot_directive',
     'sphinx.ext.napoleon',
     'sphinxcontrib.plantuml',
-    'sphinxcontrib.programoutput'
+    'sphinxcontrib.programoutput',
+    'sphinxcontrib.bibtex'
 ]
 
 plantuml = "/usr/bin/java -Djava.awt.headless=true -jar /tmp/plantuml.jar"
@@ -151,7 +143,7 @@ language = 'en'
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store', 'cmake/*', '**/blt/**']
+exclude_patterns = [u'_build', 'Thumbs.db', '.DS_Store', 'cmake/*']
 
 todo_include_todos = True
 
@@ -262,21 +254,85 @@ texinfo_documents = [
 numfig = True
 
 # Additional stuff for the LaTeX preamble.
-latex_elements['preamble'] = '\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\usepackage[retainorgcmds]{IEEEtrantools}\n'
+latex_elements['preamble'] = '\\usepackage{amsmath}\n\\usepackage{amssymb}\n\\usepackage[retainorgcmds]{IEEEtrantools}\n\\usepackage{mathtools}\n'
+latex_additional_files = ['docs/sphinx/latex_macros.sty']
+
+bibtex_bibfiles = ['docs/sphinx/biblio_wave.bib']
 
 
 #####################################################
 # add LaTeX macros
 
 f = open('docs/sphinx/latex_macros.sty')
-imgmath_latex_preamble = ""
+imgmath_latex_preamble = "\\usepackage{mathtools}"
 imgmath_image_format = 'svg'
 imgmath_font_size = 14
 
 for macro in f:
     # used when building latex and pdf versions
-    latex_elements['preamble'] += macro + '\n'
+    # latex_elements['preamble'] += macro + '\n'
     # used when building html version
     imgmath_latex_preamble += macro + '\n'
 
 #####################################################
+# Copy Macros to Mathjax
+
+mathjax3_config = {                
+  "loader": {
+    "load": ['[tex]/mathtools', '[tex]/physics'],
+  },
+  "tex": {
+    "packages": {
+      '[+]': ['mathtools', 'physics']
+    },
+    "macros": {
+      'diff': '{\\mathop{}\!\\mathrm{d}}',
+      'Gammaxy':'{\\Gamma_{xy}}',
+      'Gammaz':'{\\Gamma_{z}}',
+      'dn':'{\\partial_{\\mathbf{n}}}',
+      'abs':['{\\left|#1\\right|}', 1],
+      'vtiVhr':'{V_{h}^r}',
+      'vtif':'{f_{\\textrm{vti}}}',
+      'vtiAxy':'{\\mathbf{A}_{xy}}',
+      'vtiAz':'{\\mathbf{A}_{z}}',
+      'vtiDt':'{\\mathrm{D}t}',
+      'vtidt':'{\\mathrm{dt}}',
+      'vtipb':'{\\mathbf{p}}',
+      'vtiqb':'{\\mathbf{q}}',
+      'vtiMass':'{\\mathbf{M}}',
+      'vtiDamp':'{\\mathbf{D}}',
+      'vtiDampxy':'{\\vtiDamp^{xy}}',
+      'vtiDampz':'{\\vtiDamp^{z}}',
+      'vtiDampxyii':'{\\vtiDamp^{xy}_{\\vtiib,\\vtiib}}',
+      'vtiDampzii':'{\\vtiDamp^{z}_{\\vtiib,\\vtiib}}',
+      'vtiStiff':'{\\mathbf{S}}',
+      'vtiStiffxy':'{\\vtiStiff^{xy}}',
+      'vtiStiffz':'{\\vtiStiff^{z}}',
+      'ttiDamp':'{\\check{\\mathbf{D}}}',
+      'ttiDampxy':'{\\ttiDamp^{xy}}',
+      'ttiDampz':'{\\ttiDamp^{z}}',
+      'ttiStiff':'{\\check{\\mathbf{S}}}',
+      'ttiStiffxy':'{\\ttiStiff^{xy}}',
+      'ttiStiffz':'{\\ttiStiff^{z}}',
+      'ttiStiffpxy':'{\\ttiStiff^{p,xy}}',
+      'ttiStiffpz':'{\\ttiStiff^{p,z}}',
+      'vtixx':'{\\mathbf{x}}',
+      'vtifbp':'{\\mathbf{f}}',
+      'vtifbq':'{\\mathbf{f}}',
+      'vtiint': ['{\\int_{#1}#2 \\diff#3}', 3],
+      'vtienstq':['{\\left\\{#1 \\mathrel{}\\middle|\\mathrel{}#2\\right\\}}',2],
+      'vtiib':'{\\mathbf{i}}',
+      'vtijb':'{\\mathbf{j}}',
+      'vtiBbp':'{\\mathbf{B}^p}',
+      'vtiBbpA':'{\\mathbf{B}^{p}_{\\mathbf{A}}}',
+      'vtiBbpxy':'{\\mathbf{B}^{p}_{xy}}',
+      'vtiBbpz':'{\\mathbf{B}^{p}_{z}}',
+      'vtijacp':'{J_p}',
+      'vtiJacp':'{\\mathbf{J}_p}',
+      'ttiR':'{\\mathbf{R}}',
+      'ttiBpxy':'{\\check{\\mathbf{B}}^p_{xy}}',
+      'ttiBpz':'{\\check{\\mathbf{B}}^p_{z}}',
+      'atantwo':'{\\textm{atan2}}',
+    }
+  }
+}
