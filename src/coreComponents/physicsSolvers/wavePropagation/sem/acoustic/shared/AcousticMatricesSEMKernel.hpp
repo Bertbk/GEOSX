@@ -25,6 +25,81 @@ namespace geos
 
 struct AcousticMatricesSEM
 {
+   //Debug
+  template< typename FE_TYPE >
+  struct DofArrays
+  {
+
+    DofArrays( FE_TYPE const & finiteElement )
+      : m_finiteElement( finiteElement )
+    {}
+    /**
+     * @brief Launches the precomputation of the mass matrices
+     * @tparam EXEC_POLICY the execution policy
+     * @tparam ATOMIC_POLICY the atomic policy
+     * @tparam FE_TYPE the type of discretization
+     * @param[in] finiteElement The finite element discretization used
+     * @param[in] size the number of cells in the subRegion
+     * @param[in] numFacesPerElem number of faces per element
+     * @param[in] nodeCoords coordinates of the nodes
+     * @param[in] elemsToNodes map from element to nodes
+     * @param[in] epsilon cell-wise velocity
+     * @param[in] delta cell-wise density
+     * @param[out] dofEpsilon Array of epsilon on dof
+     * @param[out] dofDelta Array of delta on dof
+     * @param[out] dofOrder Number of elements containing the dof
+     */
+    template< typename EXEC_POLICY, typename ATOMIC_POLICY >
+    void
+    computeDofArrays( localIndex const size,
+                       arrayView2d< WaveSolverBase::wsCoordType const, nodes::REFERENCE_POSITION_USD > const nodeCoords,
+                       arrayView2d< localIndex const, cells::NODE_MAP_USD > const elemsToNodes,
+                       arrayView1d< real32 const > const vti_epsilon,
+                       arrayView1d< real32 const > const vti_delta,
+                       arrayView1d< real32 > const dofEpsilon,
+                       arrayView1d< real32 > const dofDelta,
+                       arrayView1d< real32 > const dofOrder)
+
+    {
+      // First: how many element contains the dofs ?
+      forAll< EXEC_POLICY >( size, [=] GEOS_HOST_DEVICE ( localIndex const e )
+      {
+        constexpr localIndex numQuadraturePointsPerElem = FE_TYPE::numQuadraturePoints;
+        for( localIndex q = 0; q < numQuadraturePointsPerElem; ++q )
+        {
+          int a = elemsToNodes( e, q ); //global index
+          real32 localIncrement = 1.0;
+          RAJA::atomicAdd< ATOMIC_POLICY >( &dofOrder[a], localIncrement ); // add one element
+        }
+      } ); // end loop over element
+      // Second: Compute delta and epsilon on dof (approx)
+      forAll< EXEC_POLICY >( size, [=] GEOS_HOST_DEVICE ( localIndex const e )
+      {
+        constexpr localIndex numQuadraturePointsPerElem = FE_TYPE::numQuadraturePoints;
+        for( localIndex q = 0; q < numQuadraturePointsPerElem; ++q )
+        {
+          int a = elemsToNodes( e, q ); //global index
+          real32 const localOrder = dofOrder[a];
+          real32 localEpsilon = std::fabs(vti_epsilon[e]);
+          real32 localDelta = std::fabs(vti_delta[e]);
+          
+          if( localEpsilon < 1e-5 )
+              localEpsilon = 0.;
+          if( localDelta < 1e-5 )
+            localDelta = 0.;
+          if( localDelta > localEpsilon )
+            localDelta = localEpsilon*0.95;
+          RAJA::atomicAdd< ATOMIC_POLICY >( &dofEpsilon[a], localEpsilon/localOrder );
+          RAJA::atomicAdd< ATOMIC_POLICY >( &dofDelta[a], localDelta/localOrder );
+        }
+      } ); // end loop over element
+
+    }
+
+    FE_TYPE const & m_finiteElement;
+
+  };
+  // End debug
 
   template< typename FE_TYPE >
   struct MassMatrix
@@ -322,16 +397,26 @@ struct AcousticMatricesSEM
               }
             }
             constexpr localIndex numNodesPerFace = FE_TYPE::numNodesPerFace;
-            real32 epsi = std::fabs( vti_epsilon[e] );
+// debug
+//            real32 epsi = std::fabs( vti_epsilon[e] );
+            real32 epsi = std::fabs( vti_epsilon[facesToNodes( f, q )] );
+// end debug
+
             if( std::fabs( epsi ) < 1e-5 )
               epsi = 0;
-            real32 delt = std::fabs( vti_delta[e] );
+// debug
+//         real32 delt = std::fabs( vti_delta[e] );
+            real32 delt = std::fabs( vti_delta[facesToNodes( f, q )] );
+// end debug
             if( std::fabs( delt ) < 1e-5 )
               delt = 0;
             if( delt > epsi )
               delt = epsi;
             real32 sqrtEpsi = sqrt( 1 + 2 * epsi );
-            real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[e] );
+// debug
+//            real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[e] );
+            real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[facesToNodes( f, q )] );
+// end debug
             if( lateralSurfaceFaceIndicator[f] == 1 )
             {
               // ABC coefficients updated to fit horizontal velocity

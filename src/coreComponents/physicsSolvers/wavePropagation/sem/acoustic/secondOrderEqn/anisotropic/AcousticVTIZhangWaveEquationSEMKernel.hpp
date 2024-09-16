@@ -111,8 +111,12 @@ public:
     m_stiffnessVector_p( nodeManager.getField< acousticvtifields::StiffnessVector_p >() ),
     m_stiffnessVector_q( nodeManager.getField< acousticvtifields::StiffnessVector_q >() ),
     m_density( elementSubRegion.template getField< acousticfields::AcousticDensity >() ),
-    m_vti_epsilon( elementSubRegion.template getField< acousticvtifields::AcousticEpsilon >() ),
-    m_vti_delta( elementSubRegion.template getField< acousticvtifields::AcousticDelta >() ),
+    //Debug
+    m_vti_epsilon( nodeManager.getField< acousticvtifields::AcousticDofEpsilon >() ),
+    m_vti_delta( nodeManager.getField< acousticvtifields::AcousticDofDelta >() ),
+    //End Debug
+//    m_vti_epsilon( elementSubRegion.template getField< acousticvtifields::AcousticEpsilon >() ),
+//    m_vti_delta( elementSubRegion.template getField< acousticvtifields::AcousticDelta >() ),
     m_dt( dt )
   {
     GEOS_UNUSED_VAR( edgeManager );
@@ -158,6 +162,7 @@ public:
   void setup( localIndex const k,
               StackVariables & stack ) const
   {
+    /*
     real32 epsi = std::fabs( m_vti_epsilon[k] );
     real32 delt = std::fabs( m_vti_delta[k] );
     if( std::fabs( epsi ) < 1e-5 )
@@ -169,6 +174,7 @@ public:
     stack.vti_epsi = (1 + 2 * epsi);
     stack.vti_sqrtDelta = sqrt( 1 + 2 * delt );
     stack.invDensity = 1./m_density[k];
+    */
     for( localIndex a=0; a< 8; a++ )
     {
       localIndex const nodeIndex =  m_elemsToNodes( k, FE_TYPE::meshIndexToLinearIndex3D( a ) );
@@ -212,9 +218,19 @@ public:
     // Pseudo Stiffness xy
     m_finiteElementSpace.template computeStiffnessxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
-      real32 const localIncrement_p = -val * stack.invDensity * stack.vti_epsi * m_p_n[m_elemsToNodes( k, j )];
+      real32 epsi = std::fabs( m_vti_epsilon[m_elemsToNodes( k, j )]);
+      real32 delt = std::fabs( m_vti_delta[m_elemsToNodes( k, j )]);
+      if( std::fabs( epsi ) < 1e-5 )
+        epsi = 0;
+      if( std::fabs( delt ) < 1e-5 )
+        delt = 0;
+      if( delt > epsi )
+        delt = epsi;
+      real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+
+      real32 const localIncrement_p = -val * stack.invDensity * epsi * m_p_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
-      real32 const localIncrement_q = -val * stack.invDensity * stack.vti_sqrtDelta * m_p_n[m_elemsToNodes( k, j )];
+      real32 const localIncrement_q = -val * stack.invDensity * vti_sqrtDelta * m_p_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
     } );
 
@@ -222,7 +238,18 @@ public:
 
     m_finiteElementSpace.template computeStiffnesszTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
-      real32 const localIncrement_p = -val * stack.invDensity * stack.vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
+      real32 epsi = std::fabs( m_vti_epsilon[m_elemsToNodes( k, j )]);
+      real32 delt = std::fabs( m_vti_delta[m_elemsToNodes( k, j )]);
+      if( std::fabs( epsi ) < 1e-5 )
+        epsi = 0;
+      if( std::fabs( delt ) < 1e-5 )
+        delt = 0;
+      if( delt > epsi )
+        delt = epsi;
+      real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+
+
+      real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
       real32 const localIncrement_q = -val * stack.invDensity * m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
