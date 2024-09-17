@@ -397,62 +397,66 @@ struct AcousticMatricesSEM
               }
             }
             constexpr localIndex numNodesPerFace = FE_TYPE::numNodesPerFace;
-// debug
-//            real32 epsi = std::fabs( vti_epsilon[e] );
-            real32 epsi = std::fabs( vti_epsilon[facesToNodes( f, q )] );
-// end debug
+    // debug
 
-            if( std::fabs( epsi ) < 1e-5 )
-              epsi = 0;
-// debug
-//         real32 delt = std::fabs( vti_delta[e] );
-            real32 delt = std::fabs( vti_delta[facesToNodes( f, q )] );
-// end debug
-            if( std::fabs( delt ) < 1e-5 )
-              delt = 0;
-            if( delt > epsi )
-              delt = epsi;
-            real32 sqrtEpsi = sqrt( 1 + 2 * epsi );
-// debug
-//            real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[e] );
-            real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[facesToNodes( f, q )] );
-// end debug
-            if( lateralSurfaceFaceIndicator[f] == 1 )
+            for( localIndex q = 0; q < numNodesPerFace; ++q )
             {
-              // ABC coefficients updated to fit horizontal velocity
-              real32 alpha = 1.0 / (velocity[e] * density[e] * sqrtEpsi);
-              // VTI coefficients
-              real32 vti_p_xy  = 1 + 2 * epsi;
-              real32 vti_qp_xy = sqrtDelta;
+  //            real32 epsi = std::fabs( vti_epsilon[e] );
+              real32 epsi = std::fabs( vti_epsilon[facesToNodes( f, q )] );
+  // end debug
 
-              for( localIndex q = 0; q < numNodesPerFace; ++q )
+              if( std::fabs( epsi ) < 1e-5 )
+                epsi = 0;
+  // debug
+  //         real32 delt = std::fabs( vti_delta[e] );
+              real32 delt = std::fabs( vti_delta[facesToNodes( f, q )] );
+  // end debug
+              if( std::fabs( delt ) < 1e-5 )
+                delt = 0;
+              if( delt > epsi )
+                delt = epsi;
+              real32 sqrtEpsi = sqrt( 1 + 2 * epsi );
+  // debug
+  //            real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[e] );
+              real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[facesToNodes( f, q )] );
+  // end debug
+              if( lateralSurfaceFaceIndicator[f] == 1 )
               {
-                real32 const aux = m_finiteElement.computeDampingTerm( q, xLocal );
-                real32 const localIncrement_p = alpha* vti_p_xy  * aux;
-                RAJA::atomicAdd< ATOMIC_POLICY >( &damping_pp[facesToNodes( f, q )], localIncrement_p );
+                // ABC coefficients updated to fit horizontal velocity
+                real32 alpha = 1.0 / (velocity[e] * density[e] * sqrtEpsi);
+                // VTI coefficients
+                real32 vti_p_xy  = 1 + 2 * epsi;
+                real32 vti_qp_xy = sqrtDelta;
 
-                real32 const localIncrement_qp = alpha * vti_qp_xy * aux;
-                RAJA::atomicAdd< ATOMIC_POLICY >( &damping_qp[facesToNodes( f, q )], localIncrement_qp );
+                for( localIndex q = 0; q < numNodesPerFace; ++q )
+                {
+                  real32 const aux = m_finiteElement.computeDampingTerm( q, xLocal );
+                  real32 const localIncrement_p = alpha* vti_p_xy  * aux;
+                  RAJA::atomicAdd< ATOMIC_POLICY >( &damping_pp[facesToNodes( f, q )], localIncrement_p );
+
+                  real32 const localIncrement_qp = alpha * vti_qp_xy * aux;
+                  RAJA::atomicAdd< ATOMIC_POLICY >( &damping_qp[facesToNodes( f, q )], localIncrement_qp );
+                }
               }
-            }
-            if( bottomSurfaceFaceIndicator[f] == 1 )
-            {
-              // ABC coefficients updated to fit horizontal velocity
-              real32 alpha = 1.0 / (velocity[e] * density[e]);
-              // VTI coefficients
-              real32 vti_pq_z = sqrtDelta;
-              real32 vti_q_z  = 1;
-              for( localIndex q = 0; q < numNodesPerFace; ++q )
+              if( bottomSurfaceFaceIndicator[f] == 1 )
               {
-                real32 const aux = m_finiteElement.computeDampingTerm( q, xLocal );
+                // ABC coefficients updated to fit horizontal velocity
+                real32 alpha = 1.0 / (velocity[e] * density[e]);
+                // VTI coefficients
+                real32 vti_pq_z = sqrtDelta;
+                real32 vti_q_z  = 1;
+                for( localIndex q = 0; q < numNodesPerFace; ++q )
+                {
+                  real32 const aux = m_finiteElement.computeDampingTerm( q, xLocal );
 
-                real32 const localIncrement_pq = alpha * vti_pq_z * aux;
-                RAJA::atomicAdd< ATOMIC_POLICY >( &damping_pq[facesToNodes( f, q )], localIncrement_pq );
+                  real32 const localIncrement_pq = alpha * vti_pq_z * aux;
+                  RAJA::atomicAdd< ATOMIC_POLICY >( &damping_pq[facesToNodes( f, q )], localIncrement_pq );
 
-                real32 const localIncrement_q = alpha * vti_q_z * aux;
-                RAJA::atomicAdd< ATOMIC_POLICY >( &damping_qq[facesToNodes( f, q )], localIncrement_q );
+                  real32 const localIncrement_q = alpha * vti_q_z * aux;
+                  RAJA::atomicAdd< ATOMIC_POLICY >( &damping_qq[facesToNodes( f, q )], localIncrement_q );
+                }
               }
-            }
+            }// Debug
           }
         }
       } );

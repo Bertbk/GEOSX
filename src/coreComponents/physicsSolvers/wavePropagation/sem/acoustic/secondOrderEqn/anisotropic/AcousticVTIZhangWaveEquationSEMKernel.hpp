@@ -146,8 +146,10 @@ public:
     real32 stiffnessVectorLocal_p[ numNodesPerElem ]{};
     real32 stiffnessVectorLocal_q[ numNodesPerElem ]{};
     real32 invDensity;
-    real32 vti_epsi; // (1 + 2*epsilon)
-    real32 vti_sqrtDelta; // sqrt(1 + 2*delta)
+//Debug
+//    real32 vti_epsi; // (1 + 2*epsilon)
+//    real32 vti_sqrtDelta; // sqrt(1 + 2*delta)
+    //End Debug
   };
   //***************************************************************************
 
@@ -173,8 +175,8 @@ public:
       delt = epsi;
     stack.vti_epsi = (1 + 2 * epsi);
     stack.vti_sqrtDelta = sqrt( 1 + 2 * delt );
-    stack.invDensity = 1./m_density[k];
     */
+    stack.invDensity = 1./m_density[k];
     for( localIndex a=0; a< 8; a++ )
     {
       localIndex const nodeIndex =  m_elemsToNodes( k, FE_TYPE::meshIndexToLinearIndex3D( a ) );
