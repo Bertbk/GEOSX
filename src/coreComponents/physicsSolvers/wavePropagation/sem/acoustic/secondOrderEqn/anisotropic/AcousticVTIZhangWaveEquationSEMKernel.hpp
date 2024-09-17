@@ -235,6 +235,10 @@ public:
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
       real32 const localIncrement_q = -val * stack.invDensity * vti_sqrtDelta * m_p_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
+
+      printf("elem_k=%d, m_vti_epsilon[%d] = %g\n", k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
+      printf("elem_k=%d, m_vti_delta[%d] = %g\n", k, m_elemsToNodes( k, j ),   m_vti_delta[m_elemsToNodes( k, j )]);
+
     } );
 
     // Pseudo-Stiffness z

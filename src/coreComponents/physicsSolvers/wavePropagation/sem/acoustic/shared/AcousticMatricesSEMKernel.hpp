@@ -88,9 +88,11 @@ struct AcousticMatricesSEM
           if( localDelta < 1e-5 )
             localDelta = 0.;
           if( localDelta > localEpsilon )
-            localDelta = localEpsilon*0.95;
-          RAJA::atomicAdd< ATOMIC_POLICY >( &dofEpsilon[a], localEpsilon/localOrder );
-          RAJA::atomicAdd< ATOMIC_POLICY >( &dofDelta[a], localDelta/localOrder );
+            localDelta = localEpsilon;
+          localEpsilon /= localOrder;
+          localDelta   /= localOrder;
+          RAJA::atomicAdd< ATOMIC_POLICY >( &dofEpsilon[a], localEpsilon );
+          RAJA::atomicAdd< ATOMIC_POLICY >( &dofDelta[a], localDelta );
         }
       } ); // end loop over element
 
@@ -371,8 +373,8 @@ struct AcousticMatricesSEM
                                     arrayView1d< localIndex const > const bottomSurfaceFaceIndicator,
                                     arrayView1d< real32 const > const velocity,
                                     arrayView1d< real32 const > const density,
-                                    arrayView1d< real32 const > const vti_epsilon,
-                                    arrayView1d< real32 const > const vti_delta,
+                                    arrayView1d< real32 const > const dofEpsilon,
+                                    arrayView1d< real32 const > const dofDelta,
                                     arrayView1d< real32 > const damping_pp,
                                     arrayView1d< real32 > const damping_pq,
                                     arrayView1d< real32 > const damping_qp,
@@ -402,14 +404,14 @@ struct AcousticMatricesSEM
             for( localIndex q = 0; q < numNodesPerFace; ++q )
             {
   //            real32 epsi = std::fabs( vti_epsilon[e] );
-              real32 epsi = std::fabs( vti_epsilon[facesToNodes( f, q )] );
+              real32 epsi = std::fabs( dofEpsilon[facesToNodes( f, q )] );
   // end debug
 
               if( std::fabs( epsi ) < 1e-5 )
                 epsi = 0;
   // debug
   //         real32 delt = std::fabs( vti_delta[e] );
-              real32 delt = std::fabs( vti_delta[facesToNodes( f, q )] );
+              real32 delt = std::fabs( dofDelta[facesToNodes( f, q )] );
   // end debug
               if( std::fabs( delt ) < 1e-5 )
                 delt = 0;
@@ -418,7 +420,7 @@ struct AcousticMatricesSEM
               real32 sqrtEpsi = sqrt( 1 + 2 * epsi );
   // debug
   //            real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[e] );
-              real32 sqrtDelta = sqrt( 1 + 2 * vti_delta[facesToNodes( f, q )] );
+              real32 sqrtDelta = sqrt( 1 + 2 * dofDelta[facesToNodes( f, q )] );
   // end debug
               if( lateralSurfaceFaceIndicator[f] == 1 )
               {
