@@ -32,6 +32,14 @@ namespace fields
 namespace acousticvtifields
 {
 //debug
+DECLARE_FIELD( AcousticDofOrder,
+               "acousticDofOrder",
+               array1d< real32 >,
+               0,
+               NOPLOT,
+               WRITE_AND_READ,
+               "Trick to find node connectivity" );
+
 DECLARE_FIELD( AcousticDofDelta,
                "acousticDofDelta",
                array1d< real32 >,
