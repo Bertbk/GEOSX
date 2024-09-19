@@ -67,7 +67,7 @@ struct AcousticMatricesSEM
         constexpr localIndex numQuadraturePointsPerElem = FE_TYPE::numQuadraturePoints;
         for( localIndex q = 0; q < numQuadraturePointsPerElem; ++q )
         {
-          int a = elemsToNodes( e, q ); //global index
+          localIndex a = elemsToNodes( e, q ); //global index
           real32 localIncrement = 1.0;
           RAJA::atomicAdd< ATOMIC_POLICY >( &dofOrder[a], localIncrement ); // add one element
         }
@@ -76,23 +76,21 @@ struct AcousticMatricesSEM
       forAll< EXEC_POLICY >( size, [=] GEOS_HOST_DEVICE ( localIndex const e )
       {
         constexpr localIndex numQuadraturePointsPerElem = FE_TYPE::numQuadraturePoints;
+        real32 localEpsilon = std::fabs(vti_epsilon[e]);
+        real32 localDelta = std::fabs(vti_delta[e]);          
+        if( localEpsilon < 1e-5 )
+            localEpsilon = 0.;
+        if( localDelta < 1e-5 )
+          localDelta = 0.;
+        if( localDelta > localEpsilon )
+          localDelta = localEpsilon;
+
         for( localIndex q = 0; q < numQuadraturePointsPerElem; ++q )
         {
-          int a = elemsToNodes( e, q ); //global index
+          localIndex a = elemsToNodes( e, q ); //global index
           real32 const localOrder = dofOrder[a];
-          real32 localEpsilon = std::fabs(vti_epsilon[e]);
-          real32 localDelta = std::fabs(vti_delta[e]);
-          
-          if( localEpsilon < 1e-5 )
-              localEpsilon = 0.;
-          if( localDelta < 1e-5 )
-            localDelta = 0.;
-          if( localDelta > localEpsilon )
-            localDelta = localEpsilon;
-          localEpsilon /= localOrder;
-          localDelta   /= localOrder;
-          RAJA::atomicAdd< ATOMIC_POLICY >( &dofEpsilon[a], localEpsilon );
-          RAJA::atomicAdd< ATOMIC_POLICY >( &dofDelta[a], localDelta );
+          RAJA::atomicAdd< ATOMIC_POLICY >( &dofEpsilon[a], localEpsilon/localOrder );
+          RAJA::atomicAdd< ATOMIC_POLICY >( &dofDelta[a], localDelta/localOrder );
         }
       } ); // end loop over element
 
