@@ -230,13 +230,15 @@ public:
         delt = 0;
       if( delt > epsi )
         delt = epsi;
-      real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+      real32 vti_sqrtDelta = std::sqrt(1 + 2 *delt);
 
       real32 const localIncrement_p = -val * stack.invDensity * (1 + 2 * epsi) * m_p_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
       real32 const localIncrement_q = -val * stack.invDensity * vti_sqrtDelta * m_p_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
 
+      printf("Gradxy: elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
+      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_epsilon[%d], q, m_vti_delta[%d]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_delta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_delta[m_elemsToNodes( k, j )]);
 
@@ -255,6 +257,8 @@ public:
       if( delt > epsi )
         delt = epsi;
       real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+      printf("Gradz: elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
+      printf("Gradz: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_epsilon[%d], q, m_vti_delta[%d]);
 
 
       real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
