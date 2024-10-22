@@ -675,6 +675,21 @@ public:
                                       real64 const (&X)[8][3],
                                       FUNC && func );
 
+  template< typename FUNC >
+  GEOS_HOST_DEVICE
+  GEOS_FORCE_INLINE
+  static void computeMissingxyTerm( localIndex const q,
+                                      real64 const (&X)[8][3],
+                                      FUNC && func );
+
+  template< typename FUNC >
+  GEOS_HOST_DEVICE
+  GEOS_FORCE_INLINE
+  static void computeMissingzTerm( localIndex const q,
+                                      real64 const (&X)[8][3],
+                                      FUNC && func );
+                                      
+
   /**
    * @brief computes the matrix B in the case of quasi-stiffness (e.g. for pseudo-acoustic case), defined as J^{-T}A_z J^{-1}/det(J), where
    * J is the Jacobian matrix, and A_z is a zero matrix except on A_z(3,3) = 1.
@@ -1434,6 +1449,42 @@ computeMissingTerm( int const qa,
       func( ajc, ibc, w5 * B[5] );
     }
   }
+}
+
+template< typename GL_BASIS >
+template< typename FUNC >
+GEOS_HOST_DEVICE
+GEOS_FORCE_INLINE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeMissingxyTerm( localIndex const q,
+                        real64 const (&X)[8][3],
+                        FUNC && func )
+{
+  int qa, qb, qc;
+  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
+  real64 B[6] = {0};
+  real64 J[3][3] = {{0}};
+  computeBxyMatrix( qa, qb, qc, X, J, B );
+  computeMissingTerm( qa, qb, qc, B, func );
+}
+
+template< typename GL_BASIS >
+template< typename FUNC >
+GEOS_HOST_DEVICE
+GEOS_FORCE_INLINE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeMissingzTerm( localIndex const q,
+                       real64 const (&X)[8][3],
+                       FUNC && func )
+{
+  int qa, qb, qc;
+  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
+  real64 B[6] = {0};
+  real64 J[3][3] = {{0}};
+  computeBzMatrix( qa, qb, qc, X, J, B ); 
+  computeMissingTerm( qa, qb, qc, B, func );
 }
 
 template< typename GL_BASIS >

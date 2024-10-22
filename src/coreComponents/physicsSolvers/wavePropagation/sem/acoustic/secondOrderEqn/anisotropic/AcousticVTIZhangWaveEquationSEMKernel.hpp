@@ -265,7 +265,55 @@ public:
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
       real32 const localIncrement_q = -val * stack.invDensity * m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
+    } 
+
+    // Missing Term xy
+    m_finiteElementSpace.template computeMissingxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
+    {
+      real32 epsi = std::fabs( m_vti_epsilon[q]); // value on control point
+      real32 delt = std::fabs( m_vti_delta[q]); // value on control point
+      if( std::fabs( epsi ) < 1e-5 )
+        epsi = 0;
+      if( std::fabs( delt ) < 1e-5 )
+        delt = 0;
+      if( delt > epsi )
+        delt = epsi;
+      real32 vti_sqrtDelta = std::sqrt(1 + 2 *delt);
+
+      real32 const localIncrement_p = -val * stack.invDensity * (1 + 2 * epsi) * m_p_n[m_elemsToNodes( k, j )];
+      stack.stiffnessVectorLocal_p[i] += localIncrement_p;
+      real32 const localIncrement_q = -val * stack.invDensity * vti_sqrtDelta * m_p_n[m_elemsToNodes( k, j )];
+      stack.stiffnessVectorLocal_q[i] += localIncrement_q;
+
+//      printf("Gradxy: elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
+//      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_epsilon[q], q, m_vti_delta[q]);
+//      printf("elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
+//      printf("elem_j=%d, elem_k=%d, m_vti_delta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_delta[m_elemsToNodes( k, j )]);
+
     } );
+
+    // Pseudo-Stiffness z
+
+    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
+    {
+      real32 epsi = std::fabs( m_vti_epsilon[q]); // value on control point
+      real32 delt = std::fabs( m_vti_delta[q]); // value on control point
+      if( std::fabs( epsi ) < 1e-5 )
+        epsi = 0;
+      if( std::fabs( delt ) < 1e-5 )
+        delt = 0;
+      if( delt > epsi )
+        delt = epsi;
+      real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+ //     printf("Gradz: elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
+   //   printf("Gradz: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_epsilon[q], q, m_vti_delta[q]);
+
+
+      real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
+      stack.stiffnessVectorLocal_p[i] += localIncrement_p;
+    } 
+    
+    );
   }
 
 protected:
