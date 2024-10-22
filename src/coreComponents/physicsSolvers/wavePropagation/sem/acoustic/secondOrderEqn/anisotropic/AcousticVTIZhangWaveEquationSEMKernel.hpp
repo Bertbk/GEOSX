@@ -242,7 +242,7 @@ public:
 //      printf("elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_delta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_delta[m_elemsToNodes( k, j )]);
 
-    } );
+    });
 
     // Pseudo-Stiffness z
 
@@ -265,7 +265,7 @@ public:
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
       real32 const localIncrement_q = -val * stack.invDensity * m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
-    } 
+    } );
 
     // Missing Term xy
     m_finiteElementSpace.template computeMissingxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
@@ -290,7 +290,7 @@ public:
 //      printf("elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_delta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_delta[m_elemsToNodes( k, j )]);
 
-    } );
+    });
 
     // Pseudo-Stiffness z
 
