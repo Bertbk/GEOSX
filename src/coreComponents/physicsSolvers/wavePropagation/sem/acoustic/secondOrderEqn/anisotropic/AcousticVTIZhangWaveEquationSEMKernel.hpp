@@ -217,11 +217,13 @@ public:
                               localIndex const q,
                               StackVariables & stack ) const
   {
+    //k = elem
+    
     // Pseudo Stiffness xy
     m_finiteElementSpace.template computeStiffnessxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
-      real32 epsi = std::fabs( m_vti_epsilon[m_elemsToNodes( k, j )]);
-      real32 delt = std::fabs( m_vti_delta[m_elemsToNodes( k, j )]);
+      real32 epsi = std::fabs( m_vti_epsilon[q]); // value on control point
+      real32 delt = std::fabs( m_vti_delta[q]); // value on control point
       if( std::fabs( epsi ) < 1e-5 )
         epsi = 0;
       if( std::fabs( delt ) < 1e-5 )
@@ -244,8 +246,8 @@ public:
 
     m_finiteElementSpace.template computeStiffnesszTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
-      real32 epsi = std::fabs( m_vti_epsilon[m_elemsToNodes( k, j )]);
-      real32 delt = std::fabs( m_vti_delta[m_elemsToNodes( k, j )]);
+      real32 epsi = std::fabs( m_vti_epsilon[q]); // value on control point
+      real32 delt = std::fabs( m_vti_delta[q]); // value on control point
       if( std::fabs( epsi ) < 1e-5 )
         epsi = 0;
       if( std::fabs( delt ) < 1e-5 )
