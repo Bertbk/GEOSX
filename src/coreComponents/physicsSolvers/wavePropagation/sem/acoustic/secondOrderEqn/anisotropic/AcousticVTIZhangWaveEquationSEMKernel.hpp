@@ -114,6 +114,7 @@ public:
     //Debug
     m_vti_epsilon( nodeManager.getField< acousticvtifields::AcousticDofEpsilon >() ),
     m_vti_delta( nodeManager.getField< acousticvtifields::AcousticDofDelta >() ),
+    m_vti_GradzDelta( elementSubRegion.template getField< acousticvtifields::AcousticGradzDelta >() ),    
     //End Debug
 //    m_vti_epsilon( elementSubRegion.template getField< acousticvtifields::AcousticEpsilon >() ),
 //    m_vti_delta( elementSubRegion.template getField< acousticvtifields::AcousticDelta >() ),
@@ -266,7 +267,7 @@ public:
       real32 const localIncrement_q = -val * stack.invDensity * m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
     } );
-
+/*
     // Missing Term xy
     m_finiteElementSpace.template computeMissingxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
@@ -291,10 +292,9 @@ public:
 //      printf("elem_j=%d, elem_k=%d, m_vti_delta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_delta[m_elemsToNodes( k, j )]);
 
     });
-
-    // Pseudo-Stiffness z
-
-    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
+*/
+    // missing dz term
+        m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
       real32 epsi = std::fabs( m_vti_epsilon[q]); // value on control point
       real32 delt = std::fabs( m_vti_delta[q]); // value on control point
@@ -305,15 +305,13 @@ public:
       if( delt > epsi )
         delt = epsi;
       real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
- //     printf("Gradz: elem_j=%d, elem_k=%d, m_vti_epsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_epsilon[m_elemsToNodes( k, j )]);
-   //   printf("Gradz: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_epsilon[q], q, m_vti_delta[q]);
+      real32 GradzsqrtDelta = m_vti_GradzDelta[k]/vti_sqrtDelta;
 
-
-      real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
+      real32 const localIncrement_p = -val * stack.invDensity * GradzsqrtDelta* m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
-    } 
-    
-    );
+    } );
+
+
   }
 
 protected:
@@ -340,6 +338,9 @@ protected:
 
   /// The array containing the delta Thomsen parameter.
   arrayView1d< real32 const > const m_vti_delta;
+
+  /// dz delta.
+  arrayView1d< real32 const > const m_vti_GradzDelta;
 
   /// The time increment for this time integration step.
   real64 const m_dt;

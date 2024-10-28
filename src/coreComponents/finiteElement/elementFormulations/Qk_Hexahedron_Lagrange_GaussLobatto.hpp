@@ -682,6 +682,7 @@ public:
                                       real64 const (&X)[8][3],
                                       FUNC && func );
 
+
   template< typename FUNC >
   GEOS_HOST_DEVICE
   GEOS_FORCE_INLINE
@@ -743,25 +744,6 @@ public:
                           real64 const (&B)[6],
                           FUNC && func );
 
-/**
- * @brief Computes the "Grad(Phi)*B*Grad(Phi)" coefficient of the stiffness term. The matrix B must be provided and Phi denotes a basis
- * function.
- * @param qa The 1d quadrature point index in xi0 direction (0,1)
- * @param qb The 1d quadrature point index in xi1 direction (0,1)
- * @param qc The 1d quadrature point index in xi2 direction (0,1)
- * @param B Array of the B matrix, in Voigt notation
- * @param func Callback function accepting three parameters: i, j and R_ij
- */
-  template< typename FUNC >
-  GEOS_HOST_DEVICE
-  GEOS_FORCE_INLINE
-  static void
-  computeMissingTerm( int const qa,
-                          int const qb,
-                          int const qc,
-                          real64 const (&B)[6],
-                          FUNC && func );
-                          
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
@@ -1349,6 +1331,75 @@ computeBxyMatrix( int const qa,
   B[5] = detJ*(Jinv[0][0]*Jinv[1][0] + Jinv[0][1]*Jinv[1][1]);
 }
 
+
+template< typename GL_BASIS >
+template< typename FUNC >
+GEOS_HOST_DEVICE
+GEOS_FORCE_INLINE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeMissingxyTerm( localIndex const q,
+                      real64 const (&X)[8][3],
+                      FUNC && func )
+{
+  // TODO
+  //int qa, qb, qc;
+  //GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
+  //real64 B[6] = {0};
+  //real64 J[3][3] = {{0}};
+  //computeBMatrix( qa, qb, qc, X, J, B );
+  //computeGradPhiBGradPhi( qa, qb, qc, B, func );
+}
+
+template< typename GL_BASIS >
+template< typename FUNC >
+GEOS_HOST_DEVICE
+GEOS_FORCE_INLINE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeMissingzTerm( localIndex const q,
+                      real64 const (&X)[8][3],
+                      FUNC && func )
+{
+  // TODO
+  int qa, qb, qc;
+  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
+  real64 B[6] = {0};
+  real64 J[3][3] = {{0}};
+  computeBMatrix( qa, qb, qc, X, J, B );
+  computeGradPhiBGradzF( qa, qb, qc, B, func );
+}
+
+
+template< typename GL_BASIS >
+template< typename FUNC >
+GEOS_HOST_DEVICE
+GEOS_FORCE_INLINE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeGradPhiBGradzF( int const qa,
+                        int const qb,
+                        int const qc,
+                        real64 const (&B)[6],
+                        FUNC && func )
+{
+  const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
+  const int i = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc ); // i = control point q
+  for( int j=0; j<num1dNodes; j++ )
+  {
+    const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, qb, qc );
+    const int ajc = GL_BASIS::TensorProduct3D::linearIndex( qa, j, qc );
+    const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
+    const real64 gja = basisGradientAt( j, qa );
+    const real64 gjb = basisGradientAt( j, qb );
+    const real64 gjc = basisGradientAt( j, qc );
+    // diagonal terms
+    const real64 w0 = w * (B[2] * gjc + B[3] * gjb+ B[4] * gja);
+    func( ibc, jbc, w0); // to be multiply by "dz(f)" in the element K (supposedly constant)
+  }
+}
+
+
 template< typename GL_BASIS >
 template< typename FUNC >
 GEOS_HOST_DEVICE
@@ -1407,92 +1458,6 @@ GEOS_HOST_DEVICE
 GEOS_FORCE_INLINE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMissingTerm( int const qa,
-                        int const qb,
-                        int const qc,
-                        real64 const (&B)[6],
-                        FUNC && func )
-{
-  const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
-  for( int i=0; i<num1dNodes; i++ )
-  {
-    const int ibc = GL_BASIS::TensorProduct3D::linearIndex( i, qb, qc );
-    const int aic = GL_BASIS::TensorProduct3D::linearIndex( qa, i, qc );
-    const int abi = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, i );
-    const real64 gia = basisGradientAt( qa, ibc);
-    const real64 gib = basisGradientAt( qb, aic);
-    const real64 gic = basisGradientAt( qc, abi);
-    for( int j=0; j<num1dNodes; j++ )
-    {
-      const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, qb, qc );
-      const int ajc = GL_BASIS::TensorProduct3D::linearIndex( qa, j, qc );
-      const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
-      const real64 gja = basisGradientAt( jbc, ibc );
-      const real64 gjb = basisGradientAt( ajc, aic );
-      const real64 gjc = basisGradientAt( abj, abi );
-      // diagonal terms
-      const real64 w0 = w * gia * gja;
-      func( ibc, jbc, w0 * B[0] );
-      const real64 w1 = w * gib * gjb;
-      func( aic, ajc, w1 * B[1] );
-      const real64 w2 = w * gic * gjc;
-      func( abi, abj, w2 * B[2] );
-      // off-diagonal terms
-      const real64 w3 = w * gib * gjc;
-      func( aic, abj, w3 * B[3] );
-      func( abj, aic, w3 * B[3] );
-      const real64 w4 = w * gia * gjc;
-      func( ibc, abj, w4 * B[4] );
-      func( abj, ibc, w4 * B[4] );
-      const real64 w5 = w * gia * gjb;
-      func( ibc, ajc, w5 * B[5] );
-      func( ajc, ibc, w5 * B[5] );
-    }
-  }
-}
-
-template< typename GL_BASIS >
-template< typename FUNC >
-GEOS_HOST_DEVICE
-GEOS_FORCE_INLINE
-void
-Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMissingxyTerm( localIndex const q,
-                        real64 const (&X)[8][3],
-                        FUNC && func )
-{
-  int qa, qb, qc;
-  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
-  real64 B[6] = {0};
-  real64 J[3][3] = {{0}};
-  computeBxyMatrix( qa, qb, qc, X, J, B );
-  computeMissingTerm( qa, qb, qc, B, func );
-}
-
-template< typename GL_BASIS >
-template< typename FUNC >
-GEOS_HOST_DEVICE
-GEOS_FORCE_INLINE
-void
-Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMissingzTerm( localIndex const q,
-                       real64 const (&X)[8][3],
-                       FUNC && func )
-{
-  int qa, qb, qc;
-  GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
-  real64 B[6] = {0};
-  real64 J[3][3] = {{0}};
-  computeBzMatrix( qa, qb, qc, X, J, B ); 
-  computeMissingTerm( qa, qb, qc, B, func );
-}
-
-template< typename GL_BASIS >
-template< typename FUNC >
-GEOS_HOST_DEVICE
-GEOS_FORCE_INLINE
-void
-Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeStiffnessxyTerm( localIndex const q,
                         real64 const (&X)[8][3],
                         FUNC && func )
@@ -1503,7 +1468,6 @@ computeStiffnessxyTerm( localIndex const q,
   real64 J[3][3] = {{0}};
   computeBxyMatrix( qa, qb, qc, X, J, B ); // The only change!
   computeGradPhiBGradPhi( qa, qb, qc, B, func );
-  computeMissingTerm( qa, qb, qc, B, func );
 }
 
 template< typename GL_BASIS >
@@ -1522,7 +1486,6 @@ computeStiffnesszTerm( localIndex const q,
   real64 J[3][3] = {{0}};
   computeBzMatrix( qa, qb, qc, X, J, B ); // The only change!
   computeGradPhiBGradPhi( qa, qb, qc, B, func );
-  computeMissingTerm( qa, qb, qc, B, func );
 }
 
 template< typename GL_BASIS >

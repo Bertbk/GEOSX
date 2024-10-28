@@ -48,6 +48,14 @@ DECLARE_FIELD( AcousticDofDelta,
                WRITE_AND_READ,
                "Delta thomsen anisotropy Dof parameter" );
 
+DECLARE_FIELD( AcousticGradzDelta,
+               "acousticGrazDelta",
+               array1d< real32 >,
+               0,
+               NOPLOT,
+               WRITE_AND_READ,
+               "Delta thomsen anisotropy Dof parameter" );
+
 DECLARE_FIELD( AcousticDofEpsilon,
                "acousticDofEpsilon",
                array1d< real32 >,
