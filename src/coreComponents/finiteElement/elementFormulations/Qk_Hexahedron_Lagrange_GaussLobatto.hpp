@@ -1374,15 +1374,14 @@ computeMissingzTerm( localIndex const q,
   int qa, qb, qc;
   GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
   real64 J[3][3] = {{0}};
-  real64 invJ[3][3] = {{0}};
   jacobianTransformation( qa, qb, qc, X, J );
   real64 const detJ = LvArray::tensorOps::determinant< 3 >( J );
-  LvArray::tensorOps::invert<3 >(invJ,  J );
+  LvArray::tensorOps::invert< 3 >( J );
   real64 InvJAz[3][3] = {{0}};
   // compute Az * J{-T)
-  InvJAz[0][2] = detJ * invJ[0][2];
-  InvJAz[1][2] = detJ * invJ[1][2];
-  InvJAz[2][2] = detJ * invJ[2][2];
+  InvJAz[0][2] = detJ * J[0][2];
+  InvJAz[1][2] = detJ * J[1][2];
+  InvJAz[2][2] = detJ * J[2][2];
 
   computeGradPhiBGradzF( qa, qb, qc, InvJAz, func );
 }
