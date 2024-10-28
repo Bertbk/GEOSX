@@ -745,6 +745,16 @@ public:
                           FUNC && func );
 
 
+  template< typename FUNC >
+  GEOS_HOST_DEVICE
+  GEOS_FORCE_INLINE
+  static void
+  computeGradPhiBGradzF( int const qa,
+                          int const qb,
+                          int const qc,
+                          real64 const (&B)[6],
+                          FUNC && func );
+
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
    *   x-part of the first order stiffness matrix R, i.e., the matrix composed of the
