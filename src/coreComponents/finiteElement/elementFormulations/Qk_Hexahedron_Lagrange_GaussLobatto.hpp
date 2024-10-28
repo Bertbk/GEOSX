@@ -752,7 +752,7 @@ public:
   computeGradPhiBGradzF( int const qa,
                           int const qb,
                           int const qc,
-                          real64 const (&B)[6],
+                          real64 const (&B)[3][3],
                           FUNC && func );
 
   /**
@@ -1398,7 +1398,7 @@ Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeGradPhiBGradzF( int const qa,
                         int const qb,
                         int const qc,
-                        real64 const (&InvJAz)[6],
+                        real64 const (&InvJAz)[3][3],
                         FUNC && func )
 {
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
