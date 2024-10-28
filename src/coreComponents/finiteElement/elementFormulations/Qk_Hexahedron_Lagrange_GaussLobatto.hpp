@@ -1374,10 +1374,18 @@ computeMissingzTerm( localIndex const q,
   // TODO
   int qa, qb, qc;
   GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
-  real64 B[6] = {0};
   real64 J[3][3] = {{0}};
-  computeBMatrix( qa, qb, qc, X, J, B );
-  computeGradPhiBGradzF( qa, qb, qc, B, func );
+  real64 invJ[3][3] = {{0}};
+  jacobianTransformation( qa, qb, qc, X, J );
+  real64 const detJ = LvArray::tensorOps::determinant< 3 >( J );
+  LvArray::tensorOps::invert<3 >(invJ,  J );
+  real64 InvJAz[3][3] = {{0}};
+  // compute Az * J{-T)
+  InvJAz[0][2] = invJ[0][2];
+  InvJAz[1][2] = invJ[1][2];
+  InvJAz[2][2] = invJ[2][2];
+
+  computeGradPhiBGradzF( qa, qb, qc, InvJAz, func );
 }
 
 
@@ -1390,22 +1398,23 @@ Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeGradPhiBGradzF( int const qa,
                         int const qb,
                         int const qc,
-                        real64 const (&B)[6],
+                        real64 const (&InvJAz)[6],
                         FUNC && func )
 {
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
   const int i = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc ); // i = control point q
   for( int j=0; j<num1dNodes; j++ )
   {
-    const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, qb, qc );
-    const int ajc = GL_BASIS::TensorProduct3D::linearIndex( qa, j, qc );
     const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
-    const real64 gja = basisGradientAt( j, qa );
-    const real64 gjb = basisGradientAt( j, qb );
     const real64 gjc = basisGradientAt( j, qc );
     // diagonal terms
-    const real64 w0 = w * (B[2] * gjc + B[3] * gjb+ B[4] * gja);
-    func( ibc, jbc, w0); // to be multiply by "dz(f)" in the element K (supposedly constant)
+    const real64 w2 = w * gjc;
+    func( i, abj, w2 * InvJAz[2,2] );  // to be multiply by "dz(f)" in the element K (supposedly constant)
+    //Of diagonal terms
+    const real64 w3 = w * gjc;
+    func( i, abj, w3 * InvJAz[1,2] );
+    const real64 w4 = w * gjc;
+    func( i, abj, w4 * InvJAz[0,2] );
   }
 }
 
@@ -1448,13 +1457,13 @@ computeGradPhiBGradPhi( int const qa,
       func( abi, abj, w2 * B[2] );
       // off-diagonal terms
       const real64 w3 = w * gib * gjc;
-      func( aic, abj, w3 * B[3] );
+      func( aic, abj, w3 * B[3] ); // B
       func( abj, aic, w3 * B[3] );
       const real64 w4 = w * gia * gjc;
-      func( ibc, abj, w4 * B[4] );
+      func( ibc, abj, w4 * B[4] ); // B
       func( abj, ibc, w4 * B[4] );
       const real64 w5 = w * gia * gjb;
-      func( ibc, ajc, w5 * B[5] );
+      func( ibc, ajc, w5 * B[5] ); // B12
       func( ajc, ibc, w5 * B[5] );
     }
   }
