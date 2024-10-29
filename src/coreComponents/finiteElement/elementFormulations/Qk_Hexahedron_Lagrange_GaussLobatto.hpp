@@ -1376,8 +1376,8 @@ computeMissingzTerm( localIndex const q,
   real64 J[3][3] = {{0}};
   jacobianTransformation( qa, qb, qc, X, J );
   real64 const detJ = LvArray::tensorOps::determinant< 3 >( J );
-  LvArray::tensorOps::invert< 3 >( J );
-  real64 InvJAz[3][3] = {{0}};
+  LvArray::tensorOps::invert< 3 >( J ); // J <- J^-1
+  real64 InvJAz[3][3] = {{0}}; // = det(J) * Az * J^-1
   // compute Az * J{-T)
   InvJAz[0][2] = detJ * J[0][2];
   InvJAz[1][2] = detJ * J[1][2];
@@ -1402,17 +1402,22 @@ computeGradPhiBGradzF( int const qa,
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
   for( int j=0; j<num1dNodes; j++ )
   {
-    const int i = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc ); // WRONG i = control point q
+    const int i = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc ); // i = control point q  =abc
+
+    const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, qb, qc );
+    const int ajc = GL_BASIS::TensorProduct3D::linearIndex( qa, j, qc );
     const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
+    const real64 gja = basisGradientAt( j, qa );
+    const real64 gjb = basisGradientAt( j, qb );
     const real64 gjc = basisGradientAt( j, qc );
     // diagonal terms
     const real64 w2 = w * gjc;
     func( i, abj, w2 * InvJAz[2][2] );  // to be multiply by "dz(f)" in the element K (supposedly constant)
     //Of diagonal terms
-    const real64 w3 = w * gjc;
-    func( i, abj, w3 * InvJAz[1][2] );
-    const real64 w4 = w * gjc;
-    func( i, abj, w4 * InvJAz[0][2] );
+    const real64 w3 = w * gjb;
+    func( i, ajc, w3 * InvJAz[1][2] );
+    const real64 w4 = w * gja;
+    func( i, jbc, w4 * InvJAz[0][2] );
   }
 }
 
