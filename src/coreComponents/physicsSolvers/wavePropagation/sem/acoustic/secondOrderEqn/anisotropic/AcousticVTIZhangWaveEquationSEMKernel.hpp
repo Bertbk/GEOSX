@@ -303,7 +303,7 @@ public:
       if( delt > epsi )
         delt = epsi;
       real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
-      real32 GradzsqrtDelta = m_vti_GradzDelta[k]/vti_sqrtDelta;
+      real32 GradzsqrtDelta = delt*m_vti_GradzDelta[k]/vti_sqrtDelta;
 
       real32 const localIncrement_p = -val * stack.invDensity * GradzsqrtDelta* m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
