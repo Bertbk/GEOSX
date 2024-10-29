@@ -54,7 +54,7 @@ DECLARE_FIELD( AcousticGradzDelta,
                0,
                NOPLOT,
                WRITE_AND_READ,
-               "Delta thomsen anisotropy Dof parameter" );
+               "dz Delta thomsen anisotropy Dof parameter" );
 
 DECLARE_FIELD( AcousticDofEpsilon,
                "acousticDofEpsilon",

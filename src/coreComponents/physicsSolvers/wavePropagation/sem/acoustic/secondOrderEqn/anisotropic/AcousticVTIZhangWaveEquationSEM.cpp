@@ -92,7 +92,7 @@ void AcousticVTIZhangWaveEquationSEM::registerDataOnMesh( Group & meshBodies )
                                //Debug
                                acousticvtifields::AcousticDofEpsilon,
                                acousticvtifields::AcousticDofDelta,
-//                               acousticvtifields::AcousticDofOrder,
+                               acousticvtifields::AcousticDofOrder,
                                //end  debug                               
                                acousticvtifields::AcousticLateralSurfaceNodeIndicator,
                                acousticvtifields::AcousticBottomSurfaceNodeIndicator >( getName() );
@@ -302,10 +302,10 @@ void AcousticVTIZhangWaveEquationSEM::initializePostInitialConditionsPreSubGroup
     // Debug
     arrayView1d< real32 > const dofEpsilon = nodeManager.getField< acousticvtifields::AcousticDofEpsilon >();
     arrayView1d< real32 > const dofDelta   = nodeManager.getField< acousticvtifields::AcousticDofDelta >();
- //   arrayView1d< real32 > const dofOrder   = nodeManager.getField< acousticvtifields::AcousticDofOrder >();
-//    dofEpsilon.zero();
-//    dofDelta.zero();
-//    dofOrder.zero(); // number of Hexa countaining a dof
+    arrayView1d< real32 > const dofOrder   = nodeManager.getField< acousticvtifields::AcousticDofOrder >();
+    dofEpsilon.zero();
+    dofDelta.zero();
+    dofOrder.zero(); // number of Hexa countaining a dof
     // End Debug
 
     /// get array of indicators: 1 if face is on the free surface; 0 otherwise
@@ -339,7 +339,7 @@ void AcousticVTIZhangWaveEquationSEM::initializePostInitialConditionsPreSubGroup
         using FE_TYPE = TYPEOFREF( finiteElement );
 
         // Debug
-/*        AcousticMatricesSEM::DofArrays< FE_TYPE > kernelDebug( finiteElement );
+        AcousticMatricesSEM::DofArrays< FE_TYPE > kernelDebug( finiteElement );
         kernelDebug.template computeDofArrays< EXEC_POLICY, ATOMIC_POLICY >( elementSubRegion.size(),
                                                                           nodeCoords,
                                                                           elemsToNodes,
@@ -348,7 +348,7 @@ void AcousticVTIZhangWaveEquationSEM::initializePostInitialConditionsPreSubGroup
                                                                           dofEpsilon,
                                                                           dofDelta,
                                                                           dofOrder );
-                                                                          */
+                                                                          
       // End Debug
 
         AcousticMatricesSEM::MassMatrix< FE_TYPE > kernelM( finiteElement );
