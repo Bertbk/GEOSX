@@ -1400,40 +1400,19 @@ computeGradPhiBGradzF( int const qa,
                         FUNC && func )
 {
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
-  for( int i=0; i<num1dNodes; i++ )
+  for( int j=0; j<num1dNodes; j++ )
   {
-    const int ibc = GL_BASIS::TensorProduct3D::linearIndex( i, qb, qc );
-    const int aic = GL_BASIS::TensorProduct3D::linearIndex( qa, i, qc );
-    const int abi = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, i );
-    const real64 gia = basisGradientAt( i, qa );
-    const real64 gib = basisGradientAt( i, qb );
-    const real64 gic = basisGradientAt( i, qc );
-    for( int j=0; j<num1dNodes; j++ )
-    {
-      const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, qb, qc );
-      const int ajc = GL_BASIS::TensorProduct3D::linearIndex( qa, j, qc );
-      const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
-      const real64 gja = basisGradientAt( j, qa );
-      const real64 gjb = basisGradientAt( j, qb );
-      const real64 gjc = basisGradientAt( j, qc );
-      // diagonal terms
-      const real64 w0 = w * gia * gja;
-      func( ibc, jbc, w0 * InvJAz[0][0] );
-      const real64 w1 = w * gib * gjb;
-      func( aic, ajc, w1 * InvJAz[0][1] );
-      const real64 w2 = w * gic * gjc;
-      func( abi, abj, w2 * InvJAz[0][2] );
-      // off-diagonal terms
-      const real64 w3 = w * gib * gjc;
-      func( aic, abj, w3 * InvJAz[0][0] ); // B
-      func( abj, aic, w3 * InvJAz[0][0] );
-      const real64 w4 = w * gia * gjc;
-      func( ibc, abj, w4 * InvJAz[0][1] ); // B
-      func( abj, ibc, w4 * InvJAz[0][1] );
-      const real64 w5 = w * gia * gjb;
-      func( ibc, ajc, w5 * InvJAz[0][2] ); // B12
-      func( ajc, ibc, w5 * InvJAz[0][2] );
-    }
+    const int i = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc ); // WRONG i = control point q
+    const int abj = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, j );
+    const real64 gjc = basisGradientAt( j, qc );
+    // diagonal terms
+    const real64 w2 = w * gjc;
+    func( i, abj, w2 * InvJAz[2][2] );  // to be multiply by "dz(f)" in the element K (supposedly constant)
+    //Of diagonal terms
+    const real64 w3 = w * gjc;
+    func( i, abj, w3 * InvJAz[1][2] );
+    const real64 w4 = w * gjc;
+    func( i, abj, w4 * InvJAz[0][2] );
   }
 }
 
