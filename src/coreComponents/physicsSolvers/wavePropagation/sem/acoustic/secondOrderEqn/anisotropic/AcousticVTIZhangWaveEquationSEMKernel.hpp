@@ -221,8 +221,8 @@ public:
     // Pseudo Stiffness xy
     m_finiteElementSpace.template computeStiffnessxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
-      real32 epsi = std::fabs( m_vti_DofEpsilon[q]); // value on control point
-      real32 delt = std::fabs( m_vti_DofDelta[q]); // value on control point
+      real32 epsi = std::fabs( m_vti_DofEpsilon[m_elemsToNodes(k, q)]); // value on control point
+      real32 delt = std::fabs( m_vti_DofDelta[m_elemsToNodes(k, q)]); // value on control point
       if( std::fabs( epsi ) < 1e-5 )
         epsi = 0;
       if( std::fabs( delt ) < 1e-5 )
@@ -237,7 +237,7 @@ public:
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
 
 //      printf("Gradxy: elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-//      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[q], q, m_vti_DofDelta[q]);
+//      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[m_elemsToNodes(k, q)], q, m_vti_DofDelta[m_elemsToNodes(k, q)]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_DofDelta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_DofDelta[m_elemsToNodes( k, j )]);
 
@@ -247,8 +247,8 @@ public:
 
     m_finiteElementSpace.template computeStiffnesszTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
-      real32 epsi = std::fabs( m_vti_DofEpsilon[q]); // value on control point
-      real32 delt = std::fabs( m_vti_DofDelta[q]); // value on control point
+      real32 epsi = std::fabs( m_vti_DofEpsilon[m_elemsToNodes(k, q)]); // value on control point
+      real32 delt = std::fabs( m_vti_DofDelta[m_elemsToNodes(k, q)]); // value on control point
       if( std::fabs( epsi ) < 1e-5 )
         epsi = 0;
       if( std::fabs( delt ) < 1e-5 )
@@ -257,7 +257,7 @@ public:
         delt = epsi;
       real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
  //     printf("Gradz: elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-   //   printf("Gradz: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[q], q, m_vti_DofDelta[q]);
+   //   printf("Gradz: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[m_elemsToNodes(k, q)], q, m_vti_DofDelta[m_elemsToNodes(k, q)]);
 
 
       real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
@@ -269,8 +269,8 @@ public:
     // Missing Term xy
     m_finiteElementSpace.template computeMissingxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
-      real32 epsi = std::fabs( m_vti_DofEpsilon[q]); // value on control point
-      real32 delt = std::fabs( m_vti_DofDelta[q]); // value on control point
+      real32 epsi = std::fabs( m_vti_DofEpsilon[m_elemsToNodes(k, q)]); // value on control point
+      real32 delt = std::fabs( m_vti_DofDelta[m_elemsToNodes(k, q)]); // value on control point
       if( std::fabs( epsi ) < 1e-5 )
         epsi = 0;
       if( std::fabs( delt ) < 1e-5 )
@@ -285,7 +285,7 @@ public:
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
 
 //      printf("Gradxy: elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-//      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[q], q, m_vti_DofDelta[q]);
+//      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[m_elemsToNodes(k, q)], q, m_vti_DofDelta[m_elemsToNodes(k, q)]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
 //      printf("elem_j=%d, elem_k=%d, m_vti_DofDelta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_DofDelta[m_elemsToNodes( k, j )]);
 
