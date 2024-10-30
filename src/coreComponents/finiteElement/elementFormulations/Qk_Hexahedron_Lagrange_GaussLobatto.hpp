@@ -1376,14 +1376,15 @@ computeMissingzTerm( localIndex const q,
   real64 J[3][3] = {{0}};
   jacobianTransformation( qa, qb, qc, X, J );
   real64 const detJ = LvArray::tensorOps::determinant< 3 >( J );
-  LvArray::tensorOps::invert< 3 >( J ); // J <- J^-1
-  real64 InvJAz[3][3] = {{0}}; // = det(J) * Az * J^-1
+  LvArray::tensorOps::transpose< 3 >( J ); // J <- J^T
+  LvArray::tensorOps::invert< 3 >( J ); // J <- J^-T
+  real64 AzInvJT[3][3] = {{0}}; // = det(J) * Az * J^-T
   // compute Az * J{-T)
-  InvJAz[0][2] = detJ * J[0][2];
-  InvJAz[1][2] = detJ * J[1][2];
-  InvJAz[2][2] = detJ * J[2][2];
+  AzInvJT[2][0] = detJ * J[2][0];
+  AzInvJT[2][1] = detJ * J[2][1];
+  AzInvJT[2][2] = detJ * J[2][2];
 
-  computeGradPhiBGradzF( qa, qb, qc, InvJAz, func );
+  computeGradPhiBGradzF( qa, qb, qc, AzInvJT, func );
 }
 
 
@@ -1396,7 +1397,7 @@ Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeGradPhiBGradzF( int const qa,
                         int const qb,
                         int const qc,
-                        real64 const (&InvJAz)[3][3],
+                        real64 const (&AzInvJT)[3][3],
                         FUNC && func )
 {
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
@@ -1412,12 +1413,12 @@ computeGradPhiBGradzF( int const qa,
     const real64 gjc = basisGradientAt( j, qc );
     // diagonal terms
     const real64 w2 = w * gjc;
-    func( i, abj, w2 * InvJAz[2][2] );  // to be multiply by "dz(f)" in the element K (supposedly constant)
+    func( i, abj, w2 * AzInvJT[2][2] );  // to be multiply by "dz(f)" in the element K (supposedly constant)
     //Of diagonal terms
-    const real64 w3 = w * gjb;
-    func( i, ajc, w3 * InvJAz[1][2] );
     const real64 w4 = w * gja;
-    func( i, jbc, w4 * InvJAz[0][2] );
+    func( i, jbc, w4 * AzInvJT[2][0] );
+    const real64 w3 = w * gjb;
+    func( i, ajc, w3 * AzInvJT[2][1] );
   }
 }
 
