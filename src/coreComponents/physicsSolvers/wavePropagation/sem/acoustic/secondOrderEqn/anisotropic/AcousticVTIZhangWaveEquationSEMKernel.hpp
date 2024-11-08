@@ -323,9 +323,9 @@ public:
         real64 nx = m_faceNormals( f, 0 ), ny = m_faceNormals( f, 1 ), nz = m_faceNormals( f, 2 );
         // determine sign to get an outward pointing normal for the fluid -> solid coupling
         localIndex const sgn = (
-          (faceCenters( f, 0 ) - elemCenters( k, 0 )) * nx +
-          (faceCenters( f, 1 ) - elemCenters( k, 1 )) * ny +
-          (faceCenters( f, 2 ) - elemCenters( k, 2 )) * nz
+          (m_faceCenters( f, 0 ) - m_elemCenters( k, 0 )) * nx +
+          (m_faceCenters( f, 1 ) - m_elemCenters( k, 1 )) * ny +
+          (m_faceCenters( f, 2 ) - m_elemCenters( k, 2 )) * nz
           ) < 0 ? 1 : -1;
           //Multiply by Az
         N[0] = 0.;//sgn* nx;
