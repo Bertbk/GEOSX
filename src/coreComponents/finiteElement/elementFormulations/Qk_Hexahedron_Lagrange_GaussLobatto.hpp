@@ -693,7 +693,8 @@ public:
   template< typename FUNC >
   GEOS_HOST_DEVICE
   GEOS_FORCE_INLINE
-  static void computeMissingzTermBis( localIndex const q,
+  static void computeMissingzTermBis( localIndex const q3d,
+                                      localIndex const q,
                                       real64 const (&X)[4][3],
                                       real64 const (&N)[3],
                                       FUNC && func );
