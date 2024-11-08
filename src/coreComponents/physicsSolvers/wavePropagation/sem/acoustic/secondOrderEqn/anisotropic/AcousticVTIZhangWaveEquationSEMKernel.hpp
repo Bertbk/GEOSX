@@ -331,7 +331,7 @@ public:
         N[1] = sgn* ny;
         N[2] = sgn* nz;
         // Compute the boundary term
-        m_finiteElementSpace.template computeMissingzTermBis( q, q2d, xFaceLocal, N, [&] ( int j, real64 val )
+        m_finiteElementSpace.template computeMissingzTermBis( q, q2d, xFaceLocal, N, [&] ( int i, int j, real64 val )
         {
           real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
           real32 delt = std::fabs( m_vti_delta[k]); // value on control point
