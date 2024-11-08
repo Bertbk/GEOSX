@@ -108,9 +108,9 @@ public:
     m_nodeCoords( nodeManager.getField< fields::referencePosition32 >() ),
     m_elemsToFaces(elementSubRegion.faceList()),
     m_facesToNodes(faceManager.nodeList().toViewConst()),
-    m_faceNormals(faceManager.faceNormal().toViewConst());
-    m_faceCenters(faceManager.faceCenter().toViewConst());
-    m_elemCenters(elementSubRegion.getElementCenter());
+    m_faceNormals(faceManager.faceNormal().toViewConst()),
+    m_faceCenters(faceManager.faceCenter().toViewConst()),
+    m_elemCenters(elementSubRegion.getElementCenter()),
     m_p_n( nodeManager.getField< acousticvtifields::Pressure_p_n >() ),
     m_q_n( nodeManager.getField< acousticvtifields::Pressure_q_n >() ),
     m_stiffnessVector_p( nodeManager.getField< acousticvtifields::StiffnessVector_p >() ),
