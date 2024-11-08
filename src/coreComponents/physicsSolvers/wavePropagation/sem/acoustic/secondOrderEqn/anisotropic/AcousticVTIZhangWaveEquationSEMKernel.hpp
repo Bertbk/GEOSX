@@ -307,12 +307,13 @@ public:
         }
         // Hand made check if the control point belong to the face
         isOnFace = false;
-        localIndex qd= 0;
-        for( q2d = 0; q2d < FE_TYPE::numNodesPerFace; ++q2d )
+        localIndex q2d= 0;
+        for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
         {
           if(q == m_facesToNodes( f, q2d ))
           {
             isOnFace = true;
+            q2d = i;
             break;
           }
         }
