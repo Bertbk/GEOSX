@@ -310,7 +310,7 @@ public:
         localIndex q2d= 0;
         for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
         {
-          if(q == m_facesToNodes( f, q2d ))
+          if(q == m_facesToNodes( f, i ))
           {
             isOnFace = true;
             q2d = i;
