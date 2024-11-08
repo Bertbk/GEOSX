@@ -1463,7 +1463,7 @@ computeMissingzTermBis( localIndex const q3D,
   real64 J[3][2] = {{0}};
   jacobianTransformation2d( qa, qb, X, J );
   // compute J^T.J, using Voigt notation
-  real64 JtJ[3] = {{0}}; // J^T.J (Voigt notation)
+  real64 JtJ[3] = {0}; // J^T.J (Voigt notation)
   JtJ[0] = J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0];
   JtJ[1] = J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1];
   JtJ[2] = J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1];
@@ -1476,7 +1476,7 @@ computeMissingzTermBis( localIndex const q3D,
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, invJJt, J );// B <- (J.J^T)^{-1}. J
   real64 Az[3][3] = {{0}};
   Az[2][2] = sqrtDetJ;
-  LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( B, Az, B); // B <- sqrtDetJ * Az * (J.J^T)^{-1}. J
+  LvArray::tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, Az, B); // B <- sqrtDetJ * Az * (J.J^T)^{-1}. J
   computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, qa, qb, N, B, func );
 }
 
