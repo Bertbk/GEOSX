@@ -270,7 +270,7 @@ public:
     } );
 
     // missing dz term
-    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
+/*    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
       real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
       real32 delt = std::fabs( m_vti_delta[k]); // value on control point
@@ -285,7 +285,7 @@ public:
 
       real32 const localIncrement_p = -val * stack.invDensity * GradzsqrtDelta* m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
-    } );
+    } );*/
 
     //k = elem
     // For each faces
@@ -310,7 +310,7 @@ public:
         localIndex q2d= 0;
         for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
         {
-          if(q == m_facesToNodes( f, i ))
+          if(m_elemsToNodes(k, q) == m_facesToNodes( f, i ))
           {
             isOnFace = true;
             q2d = i;
@@ -318,7 +318,7 @@ public:
           }
         }
         if(!isOnFace)
-          return; 
+          break; 
         // Compute Normal 
         real64 N[3]={0};
         real64 nx = m_faceNormals( f, 0 ), ny = m_faceNormals( f, 1 ), nz = m_faceNormals( f, 2 );
