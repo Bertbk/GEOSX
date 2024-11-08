@@ -327,9 +327,11 @@ public:
           (faceCenters( f, 1 ) - elemCenters( k, 1 )) * ny +
           (faceCenters( f, 2 ) - elemCenters( k, 2 )) * nz
           ) < 0 ? 1 : -1;
-        N[0] = sgn* nx;
-        N[1] = sgn* ny;
+          //Multiply by Az
+        N[0] = 0.;//sgn* nx;
+        N[1] = 0.;//sgn* ny;
         N[2] = sgn* nz;
+
         // Compute the boundary term
         m_finiteElementSpace.template computeMissingzTermBis( q, q2d, xFaceLocal, N, [&] ( int i, int j, real64 val )
         {
