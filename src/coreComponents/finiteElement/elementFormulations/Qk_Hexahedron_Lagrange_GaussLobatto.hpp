@@ -690,7 +690,13 @@ public:
                                       real64 const (&X)[8][3],
                                       FUNC && func );
                                       
-
+  template< typename FUNC >
+  GEOS_HOST_DEVICE
+  GEOS_FORCE_INLINE
+  static void computeMissingzTermBis( localIndex const q,
+                                      real64 const (&X)[4][3],
+                                      real64 const (&N)[3],
+                                      FUNC && func );
   /**
    * @brief computes the matrix B in the case of quasi-stiffness (e.g. for pseudo-acoustic case), defined as J^{-T}A_z J^{-1}/det(J), where
    * J is the Jacobian matrix, and A_z is a zero matrix except on A_z(3,3) = 1.
@@ -753,6 +759,19 @@ public:
                           int const qb,
                           int const qc,
                           real64 const (&B)[3][3],
+                          FUNC && func );
+
+  template< typename FUNC >
+  GEOS_HOST_DEVICE
+  GEOS_FORCE_INLINE
+  static void
+  computeGradPhiBGradzFBis( int const q3Da,
+                          int const q3Db,
+                          int const q3Dc,
+                          int const qa,
+                          int const qb,
+                          real64 const (&B)[3][2],
+                          real64 const (&N)[3],
                           FUNC && func );
 
   /**
@@ -1413,7 +1432,7 @@ computeGradPhiBGradzF( int const qa,
     const real64 gjc = basisGradientAt( j, qc );
     // diagonal terms
     const real64 w2 = w * gjc;
-    func( i, abj, w2 * AzInvJT[2][2] );  // to be multiply by "dz(f)" in the element K (supposedly constant)
+    func( i, abj, w2 * AzInvJT[2][2] );  // to be multiply by "dz(f)/rho" in the element K (supposedly constant)
     //Of diagonal terms
     const real64 w4 = w * gja;
     func( i, jbc, w4 * AzInvJT[2][0] );
@@ -1421,6 +1440,77 @@ computeGradPhiBGradzF( int const qa,
     func( i, ajc, w3 * AzInvJT[2][1] );
   }
 }
+
+// With the "BIS" : compute the flux term instead (new version)
+template< typename GL_BASIS >
+template< typename FUNC >
+GEOS_HOST_DEVICE
+GEOS_FORCE_INLINE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeMissingzTermBis( localIndex const q3D,
+                      localIndex const q,
+                      real64 const (&X)[4][3],
+                      real64 const (&N)[3],
+                      FUNC && func )
+{
+  int q3Da, qb3D, q3Dc;
+  GL_BASIS::TensorProduct3D::multiIndex( q3D, q3Da, q3Db, q3Dc );
+  int qa, qb;
+  GL_BASIS::TensorProduct2D::multiIndex( q, qa, qb );
+  // 2D Jacobian transformation
+  real64 J[3][2] = {{0}};
+  jacobianTransformation2d( qa, qb, X, J );
+  // compute J^T.J, using Voigt notation
+  real64 JtJ[3] = {{0}}; // J^T.J (Voigt notation)
+  JtJ[0] = J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0];
+  JtJ[1] = J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1];
+  JtJ[2] = J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1];
+  real64 const sqrtDetJ = sqrt( LvArray::math::abs( LvArray::tensorOps::symDeterminant< 2 >( JtJ ) ) );
+  // compute J.J^T
+  real64 invJJt[3][3] = {{0}};
+  tensorOps::Rij_eq_AikBjk< 3, 3, 2 >( invJJt, J, J ); // invJJt<-(J.J^T)
+  tensorOps::invert< 3 >( invJJt ); // invJJt<-(J.J^T)^{-1}
+  real64 B[3][2] = {{0}}; 
+  tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, invJJt, J );// B <- (J.J^T)^{-1}. J
+  real64 Az[3][3] = {{0}};
+  Az[2][2] = sqrtDetJ;
+  tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( B, Az, B); // B <- sqrtDetJ * Az * (J.J^T)^{-1}. J
+  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, qa, qb, N, B, func );
+}
+
+
+template< typename GL_BASIS >
+template< typename FUNC >
+GEOS_HOST_DEVICE
+GEOS_FORCE_INLINE
+void
+Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
+computeGradPhiBGradzFBis( int const q3Da, 
+                        int const q3Db, 
+                        int const q3Dc,
+                        int const qa,
+                        int const qb,
+                        real64 const (&N)[3],
+                        real64 const (&B)[3][2],
+                        FUNC && func )
+{
+  const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb );
+  for( int j=0; j<num1dNodes; j++ )
+  {
+    const int jb = GL_BASIS::TensorProduct2D::linearIndex( j, qb);
+    const int aj = GL_BASIS::TensorProduct2D::linearIndex( qa, j);
+    const real64 gja = basisGradientAt( j, qa );
+    const real64 gjb = basisGradientAt( j, qb );
+    // diagonal terms
+    const real64 w1 = w * gja;
+    func( jb, w1 * (B[1][1]*N[1] + B[2][1]*N[2] + B[3][1]*N[3]) );
+    //Of diagonal terms
+    const real64 w2 = w * gjb;
+    func( aj, w2 * (B[1][2]*N[1] + B[2][2]*N[2] + B[3][2]*N[3]) );
+  }
+}
+
 
 
 template< typename GL_BASIS >

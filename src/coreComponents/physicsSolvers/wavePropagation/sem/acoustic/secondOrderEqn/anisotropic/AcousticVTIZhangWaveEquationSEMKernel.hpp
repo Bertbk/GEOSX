@@ -106,6 +106,11 @@ public:
           finiteElementSpace,
           inputConstitutiveType ),
     m_nodeCoords( nodeManager.getField< fields::referencePosition32 >() ),
+    m_elemsToFaces(elementSubRegion.faceList()),
+    m_facesToNodes(faceManager.nodeList().toViewConst()),
+    m_faceNormals(faceManager.faceNormal().toViewConst());
+    m_faceCenters(faceManager.faceCenter().toViewConst());
+    m_elemCenters(elementSubRegion.getElementCenter());
     m_p_n( nodeManager.getField< acousticvtifields::Pressure_p_n >() ),
     m_q_n( nodeManager.getField< acousticvtifields::Pressure_q_n >() ),
     m_stiffnessVector_p( nodeManager.getField< acousticvtifields::StiffnessVector_p >() ),
@@ -216,8 +221,6 @@ public:
                               localIndex const q,
                               StackVariables & stack ) const
   {
-    //k = elem
-    
     // Pseudo Stiffness xy
     m_finiteElementSpace.template computeStiffnessxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
@@ -265,34 +268,9 @@ public:
       real32 const localIncrement_q = -val * stack.invDensity * m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
     } );
-/*
-    // Missing Term xy
-    m_finiteElementSpace.template computeMissingxyTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
-    {
-      real32 epsi = std::fabs( m_vti_DofEpsilon[m_elemsToNodes(k, q)]); // value on control point
-      real32 delt = std::fabs( m_vti_DofDelta[m_elemsToNodes(k, q)]); // value on control point
-      if( std::fabs( epsi ) < 1e-5 )
-        epsi = 0;
-      if( std::fabs( delt ) < 1e-5 )
-        delt = 0;
-      if( delt > epsi )
-        delt = epsi;
-      real32 vti_sqrtDelta = std::sqrt(1 + 2 *delt);
 
-      real32 const localIncrement_p = -val * stack.invDensity * (1 + 2 * epsi) * m_p_n[m_elemsToNodes( k, j )];
-      stack.stiffnessVectorLocal_p[i] += localIncrement_p;
-      real32 const localIncrement_q = -val * stack.invDensity * vti_sqrtDelta * m_p_n[m_elemsToNodes( k, j )];
-      stack.stiffnessVectorLocal_q[i] += localIncrement_q;
-
-//      printf("Gradxy: elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-//      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[m_elemsToNodes(k, q)], q, m_vti_DofDelta[m_elemsToNodes(k, q)]);
-//      printf("elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-//      printf("elem_j=%d, elem_k=%d, m_vti_DofDelta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_DofDelta[m_elemsToNodes( k, j )]);
-
-    });
-*/
     // missing dz term
-        m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
+    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
       real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
       real32 delt = std::fabs( m_vti_delta[k]); // value on control point
@@ -303,18 +281,87 @@ public:
       if( delt > epsi )
         delt = epsi;
       real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
-      real32 GradzsqrtDelta = delt*m_vti_GradzDelta[k]/vti_sqrtDelta;
+      real32 GradzsqrtDelta = m_vti_GradzDelta[k]/vti_sqrtDelta;
 
       real32 const localIncrement_p = -val * stack.invDensity * GradzsqrtDelta* m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
     } );
 
+    //k = elem
+    // For each faces
+    for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
+      {
+        // would be better to check now...
+//        if(q \not\in face)
+//          break;
+        localIndex const f = m_elemsToFaces( k, iface );
+        // only the four corners of the mesh face are needed to compute the Jacobian
+        real64 xFaceLocal[ 4 ][ 3 ];
+        for( localIndex a = 0; a < 4; ++a )
+        {
+          localIndex const nodeIndex = m_facesToNodes( f, FE_TYPE::meshIndexToLinearIndex2D( a ) );
+          for( localIndex d = 0; d < 3; ++d )
+          {
+            xFaceLocal[a][d] = m_nodeCoords( nodeIndex, d );
+          }
+        }
+        // Hand made check if the control point belong to the face
+        isOnFace = false;
+        localIndex qd= 0;
+        for( q2d = 0; q2d < FE_TYPE::numNodesPerFace; ++q2d )
+        {
+          if(q == m_facesToNodes( f, q2d ))
+          {
+            isOnFace = true;
+            break;
+          }
+        }
+        if(!isOnFace)
+          return; 
+        // Compute Normal 
+        real64 N[3]={0};
+        real64 nx = m_faceNormals( f, 0 ), ny = m_faceNormals( f, 1 ), nz = m_faceNormals( f, 2 );
+        // determine sign to get an outward pointing normal for the fluid -> solid coupling
+        localIndex const sgn = (
+          (faceCenters( f, 0 ) - elemCenters( k, 0 )) * nx +
+          (faceCenters( f, 1 ) - elemCenters( k, 1 )) * ny +
+          (faceCenters( f, 2 ) - elemCenters( k, 2 )) * nz
+          ) < 0 ? 1 : -1;
+        N[0] = sgn* nx;
+        N[1] = sgn* ny;
+        N[2] = sgn* nz;
+        // Compute the boundary term
+        m_finiteElementSpace.template computeMissingzTermBis( q, q2d, xFaceLocal, N, [&] ( int j, real64 val )
+        {
+          real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
+          real32 delt = std::fabs( m_vti_delta[k]); // value on control point
+          if( std::fabs( epsi ) < 1e-5 )
+            epsi = 0;
+          if( std::fabs( delt ) < 1e-5 )
+            delt = 0;
+          if( delt > epsi )
+            delt = epsi;
+          real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+          real32 const localIncrement_p = -val * vti_sqrtDelta * m_q_n[m_facesToNodes( f, j )];
+          stack.stiffnessVectorLocal_p[q] += localIncrement_p;
+        });
+      }
 
   }
 
 protected:
   /// The array containing the nodal position array.
   arrayView2d< WaveSolverBase::wsCoordType const, nodes::REFERENCE_POSITION_USD > const m_nodeCoords;
+
+  //Element to Face
+  arrayView2d< localIndex const > const m_elemsToFaces;
+
+  //Faces to Node
+  ArrayOfArraysView< localIndex const > const m_facesToNodes;
+
+  arrayView2d< real64 const > const m_faceNormals;
+  arrayView2d< real64 const > const m_faceCenters;
+  arrayView2d< real64 const > const m_elemCenters;
 
   /// The array containing the nodal pressure array.
   arrayView1d< real32 const > const m_p_n;
