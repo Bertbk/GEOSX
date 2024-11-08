@@ -771,8 +771,8 @@ public:
                           int const q3Dc,
                           int const qa,
                           int const qb,
-                          real64 const (&B)[3][2],
                           real64 const (&N)[3],
+                          real64 const (&B)[3][2],
                           FUNC && func );
 
   /**
