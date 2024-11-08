@@ -1499,16 +1499,17 @@ computeGradPhiBGradzFBis( int const q3Da,
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb );
   for( int j=0; j<num1dNodes; j++ )
   {
+    const int i = 1; // useless
     const int jb = GL_BASIS::TensorProduct2D::linearIndex( j, qb);
     const int aj = GL_BASIS::TensorProduct2D::linearIndex( qa, j);
     const real64 gja = basisGradientAt( j, qa );
     const real64 gjb = basisGradientAt( j, qb );
     // diagonal terms
-    const real64 w1 = w * gja;
-    func( 0, jb, w1 * (B[1][1]*N[1] + B[2][1]*N[2] + B[3][1]*N[3]) );
+    const real64 w1 = w * gja* (B[0][0]*N[0] + B[1][0]*N[1] + B[2][0]*N[2]);
+    func( i, jb, w1  );
     //Of diagonal terms
-    const real64 w2 = w * gjb;
-    func( 0, aj, w2 * (B[1][2]*N[1] + B[2][2]*N[2] + B[3][2]*N[3]) );
+    const real64 w2 = w * gjb* (B[0][1]*N[0] + B[1][1]*N[1] + B[2][1]*N[2]) ;
+    func( i, aj, w2 );
   }
 }
 
