@@ -1455,7 +1455,7 @@ computeMissingzTermBis( localIndex const q3D,
                       real64 const (&N)[3],
                       FUNC && func )
 {
-  int q3Da, qb3D, q3Dc;
+  int q3Da, q3Db, q3Dc;
   GL_BASIS::TensorProduct3D::multiIndex( q3D, q3Da, q3Db, q3Dc );
   int qa, qb;
   GL_BASIS::TensorProduct2D::multiIndex( q, qa, qb );
@@ -1470,13 +1470,13 @@ computeMissingzTermBis( localIndex const q3D,
   real64 const sqrtDetJ = sqrt( LvArray::math::abs( LvArray::tensorOps::symDeterminant< 2 >( JtJ ) ) );
   // compute J.J^T
   real64 invJJt[3][3] = {{0}};
-  tensorOps::Rij_eq_AikBjk< 3, 3, 2 >( invJJt, J, J ); // invJJt<-(J.J^T)
-  tensorOps::invert< 3 >( invJJt ); // invJJt<-(J.J^T)^{-1}
+  LvArray::tensorOps::Rij_eq_AikBjk< 3, 3, 2 >( invJJt, J, J ); // invJJt<-(J.J^T)
+  LvArray::tensorOps::invert< 3 >( invJJt ); // invJJt<-(J.J^T)^{-1}
   real64 B[3][2] = {{0}}; 
-  tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, invJJt, J );// B <- (J.J^T)^{-1}. J
+  LvArray::tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, invJJt, J );// B <- (J.J^T)^{-1}. J
   real64 Az[3][3] = {{0}};
   Az[2][2] = sqrtDetJ;
-  tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( B, Az, B); // B <- sqrtDetJ * Az * (J.J^T)^{-1}. J
+  LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( B, Az, B); // B <- sqrtDetJ * Az * (J.J^T)^{-1}. J
   computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, qa, qb, N, B, func );
 }
 
