@@ -315,7 +315,7 @@ public:
             break;
           }
         }
-        printf("isOnFace = %d, m_elemsToNodes(%d, %d) = %d, m_facesToNodes( %d,%d ) = %d \n", isOnFace, k, q, m_elemsToNodes(k, q), f,q2d,m_facesToNodes( f, q2d ));
+        printf("m_elemsToFaces( %d,%d) = %d, isOnFace = %d, m_elemsToNodes(%d, %d) = %d, m_facesToNodes( %d,%d ) = %d \n", k, iface, f, isOnFace, k, q, m_elemsToNodes(k, q), f,q2d,m_facesToNodes( f, q2d ));
         if(!isOnFace)
           break; 
         // Compute Normal 
