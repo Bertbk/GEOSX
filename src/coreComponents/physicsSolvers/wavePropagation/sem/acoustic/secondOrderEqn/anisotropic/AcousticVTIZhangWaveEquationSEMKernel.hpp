@@ -315,6 +315,7 @@ public:
             break;
           }
         }
+        pmrintf("m_elemsToFaces.size( 1 ) = %d, iface = %d\n", m_elemsToFaces.size( 1 ), iface);
         printf("m_elemsToFaces( %d,%d) = %d, isOnFace = %d, m_elemsToNodes(%d, %d) = %d, m_facesToNodes( %d,%d ) = %d \n", k, iface, f, isOnFace, k, q, m_elemsToNodes(k, q), f,q2d,m_facesToNodes( f, q2d ));
         if(!isOnFace)
           break; 
