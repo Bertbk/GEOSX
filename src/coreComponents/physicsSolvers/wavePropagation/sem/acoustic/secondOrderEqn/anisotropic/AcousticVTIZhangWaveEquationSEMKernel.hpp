@@ -293,7 +293,7 @@ public:
     // For each faces
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
-        printf("m_elemsToFaces( %d,%d) = %d, m_elemsToNodes(%d, %d) = %d \n", k, iface, f, k, q, m_elemsToNodes(k, q));
+        printf("m_elemsToFaces( %d,%d) = %d, m_elemsToNodes(%d, %d) = %d \n", k, iface, m_elemsToFaces( k, iface ), k, q, m_elemsToNodes(k, q));
         localIndex const f = m_elemsToFaces( k, iface );
         // only the four corners of the mesh face are needed to compute the Jacobian
         real64 xFaceLocal[ 4 ][ 3 ];
