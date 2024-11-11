@@ -290,7 +290,7 @@ public:
 
     //k = elem
     // For each faces
-    for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
+    for( int iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
         localIndex const f = m_elemsToFaces( k, iface );
         // only the four corners of the mesh face are needed to compute the Jacobian
