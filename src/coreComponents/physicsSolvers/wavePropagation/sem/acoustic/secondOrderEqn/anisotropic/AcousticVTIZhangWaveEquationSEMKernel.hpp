@@ -289,6 +289,11 @@ public:
     } );*/
 
     //k = elem
+    for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
+    {
+      print("Coucou iface = %d\n",iface);
+    }
+
     // For each faces
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
