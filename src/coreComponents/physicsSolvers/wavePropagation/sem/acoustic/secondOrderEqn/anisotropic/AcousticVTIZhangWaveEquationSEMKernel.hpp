@@ -111,6 +111,7 @@ public:
     m_faceNormals(faceManager.faceNormal().toViewConst()),
     m_faceCenters(faceManager.faceCenter().toViewConst()),
     m_elemCenters(elementSubRegion.getElementCenter()),
+    m_freeSurfaceNodeIndicator(nodeManager.getField< acousticfields::AcousticFreeSurfaceNodeIndicator >()),
     m_p_n( nodeManager.getField< acousticvtifields::Pressure_p_n >() ),
     m_q_n( nodeManager.getField< acousticvtifields::Pressure_q_n >() ),
     m_stiffnessVector_p( nodeManager.getField< acousticvtifields::StiffnessVector_p >() ),
@@ -291,9 +292,6 @@ public:
     // For each faces
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
-        // would be better to check now...
-//        if(q \not\in face)
-//          break;
         localIndex const f = m_elemsToFaces( k, iface );
         // only the four corners of the mesh face are needed to compute the Jacobian
         real64 xFaceLocal[ 4 ][ 3 ];
@@ -317,17 +315,18 @@ public:
             break;
           }
         }
+        printf("isOnFace = %d, m_elemsToNodes(%d, %d) = %d, m_facesToNodes( %d,%d ) = %d \n", isOnFace, k, q, m_elemsToNodes(k, q), f,q2d,m_facesToNodes( f, q2d ));
         if(!isOnFace)
           break; 
         // Compute Normal 
         real64 N[3]={0};
         real64 nx = m_faceNormals( f, 0 ), ny = m_faceNormals( f, 1 ), nz = m_faceNormals( f, 2 );
-        // determine sign to get an outward pointing normal for the fluid -> solid coupling
+        // determine sign to get an outward pointing normal
         localIndex const sgn = (
           (m_faceCenters( f, 0 ) - m_elemCenters( k, 0 )) * nx +
           (m_faceCenters( f, 1 ) - m_elemCenters( k, 1 )) * ny +
           (m_faceCenters( f, 2 ) - m_elemCenters( k, 2 )) * nz
-          ) < 0 ? 1 : -1;
+          ) < 0 ? -1 : 1;
           //Multiply by Az
         N[0] = 0.;//sgn* nx;
         N[1] = 0.;//sgn* ny;
@@ -365,6 +364,7 @@ protected:
   arrayView2d< real64 const > const m_faceNormals;
   arrayView2d< real64 const > const m_faceCenters;
   arrayView2d< real64 const > const m_elemCenters;
+  arrayView1d< localIndex > const m_freeSurfaceNodeIndicator;
 
   /// The array containing the nodal pressure array.
   arrayView1d< real32 const > const m_p_n;
