@@ -289,10 +289,6 @@ public:
     } );*/
 
     //k = elem
-    for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
-      {
-       // printf("iface = %d\n", iface);
-      }
     // For each faces
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
@@ -334,7 +330,7 @@ public:
           //Multiply by Az
         N[0] = 0.;//sgn* nx;
         N[1] = 0.;//sgn* ny;
-        N[2] = sgn* nz;
+        N[2] = sgn* nz / sqrt(nx*nx +ny*ny+nz*nz);
 
         // Compute the boundary term
         m_finiteElementSpace.template computeMissingzTermBis( q, q2d, xFaceLocal, N, [&] ( int i, int j, real64 val )
