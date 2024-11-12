@@ -181,6 +181,14 @@ void AcousticVTIZhangWaveEquationSEM::precomputeSourceAndReceiverTerm( MeshLevel
                    InputError );
 
     arrayView2d< localIndex const > const elemsToFaces = elementSubRegion.faceList();
+  for (int i = 0; i < elemsToFaces.size(0); i ++)
+  {
+    for (int j = 0; j < elemsToFaces.size(1); j ++)
+     {
+      printf("elemsToFaces[%d][%d]=%d\n", i,j,elemsToFaces[i][j]);
+    }
+  }
+
     arrayView2d< localIndex const, cells::NODE_MAP_USD > const & elemsToNodes = elementSubRegion.nodeList();
     arrayView2d< localIndex const, cells::NODE_MAP_USD > const & baseElemsToNodes = baseMesh.getElemManager().getRegion( er ).getSubRegion< CellElementSubRegion >( esr ).nodeList();
     arrayView2d< real64 const > const elemCenter = elementSubRegion.getElementCenter();

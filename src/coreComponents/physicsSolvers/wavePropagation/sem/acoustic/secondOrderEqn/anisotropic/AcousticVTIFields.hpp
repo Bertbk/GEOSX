@@ -32,6 +32,15 @@ namespace fields
 namespace acousticvtifields
 {
 //debug
+DECLARE_FIELD( AcousticVerticeDelta,
+               "acousticVerticeDelta",
+               array1d< real32 >,
+               0,
+               NOPLOT,
+               WRITE_AND_READ,
+               "Delta thomsen anisotropy Dof parameter" );
+
+
 DECLARE_FIELD( AcousticDofOrder,
                "acousticDofOrder",
                array1d< real32 >,

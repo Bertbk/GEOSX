@@ -382,7 +382,6 @@ struct AcousticMatricesSEM
       {
         for( localIndex i = 0; i < elemsToFaces.size( 1 ); ++i )
         {
-          printf("Damping: i = %d, elemsToFaces.size( 1 ) = %d\n", i,elemsToFaces.size( 1 ));
           localIndex const f = elemsToFaces( e, i );
           // face on the domain boundary and not on free surface
           if( facesDomainBoundaryIndicator[f] == 1 && freeSurfaceFaceIndicator[f] != 1 )
