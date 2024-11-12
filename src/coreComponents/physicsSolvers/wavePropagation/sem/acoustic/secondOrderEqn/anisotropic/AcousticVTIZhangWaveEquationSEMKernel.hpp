@@ -322,8 +322,8 @@ public:
           }
         }
         printf("isOnFace = %d\n", isOnFace);
-/*        if(!isOnFace)
-          break; 
+        if(!isOnFace)
+          continue; 
         // Compute Normal 
         real64 N[3]={0};
         real64 nx = m_faceNormals( f, 0 ), ny = m_faceNormals( f, 1 ), nz = m_faceNormals( f, 2 );
@@ -352,7 +352,7 @@ public:
           real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
           real32 const localIncrement_p = -val * vti_sqrtDelta * m_q_n[m_facesToNodes( f, j )];
           stack.stiffnessVectorLocal_p[q] += localIncrement_p;
-        });*/
+        });
       }
 
   }
