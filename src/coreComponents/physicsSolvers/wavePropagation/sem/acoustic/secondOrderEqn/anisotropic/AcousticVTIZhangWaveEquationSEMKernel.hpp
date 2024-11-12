@@ -312,7 +312,7 @@ public:
         // Hand made check if the control point belong to the face
         bool isOnFace = false;
         localIndex q2d= 0;
-/*        for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
+        for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
         {
           if(m_elemsToNodes(k, q) == m_facesToNodes( f, i ))
           {
@@ -321,7 +321,8 @@ public:
             break;
           }
         }
-        if(!isOnFace)
+        printf("isOnFace = %d\n", isOnFace);
+/*        if(!isOnFace)
           break; 
         // Compute Normal 
         real64 N[3]={0};
