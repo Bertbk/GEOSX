@@ -88,7 +88,6 @@ void AcousticVTIFletcherWaveEquationSEM::registerDataOnMesh( Group & meshBodies 
                                acousticvtifields::DampingVector_qp,
                                acousticvtifields::StiffnessVector_p,
                                acousticvtifields::StiffnessVector_q,
-                               acousticvtifields::AcousticVerticeDelta,
                                acousticvtifields::AcousticLateralSurfaceNodeIndicator,
                                acousticvtifields::AcousticBottomSurfaceNodeIndicator >( getName() );
 
