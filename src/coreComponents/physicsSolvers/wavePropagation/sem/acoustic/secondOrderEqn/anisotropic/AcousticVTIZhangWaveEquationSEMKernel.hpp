@@ -291,11 +291,12 @@ public:
     //k = elem
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
-        printf("iface = %d\n", iface);
+       // printf("iface = %d\n", iface);
       }
     // For each faces
-    for( localIndex iface = 0; iface < 6; ++iface )
+    for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
+        printf("iface = %d\n", iface);
         printf("m_elemsToFaces( %d,%d) = %d, m_elemsToNodes(%d, %d) = %d \n", k, iface, m_elemsToFaces( k, iface ), k, q, m_elemsToNodes(k, q));
         localIndex const f = m_elemsToFaces( k, iface );
         // only the four corners of the mesh face are needed to compute the Jacobian
@@ -311,7 +312,7 @@ public:
         // Hand made check if the control point belong to the face
         bool isOnFace = false;
         localIndex q2d= 0;
-        for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
+/*        for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
         {
           if(m_elemsToNodes(k, q) == m_facesToNodes( f, i ))
           {
@@ -350,7 +351,7 @@ public:
           real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
           real32 const localIncrement_p = -val * vti_sqrtDelta * m_q_n[m_facesToNodes( f, j )];
           stack.stiffnessVectorLocal_p[q] += localIncrement_p;
-        });
+        });*/
       }
 
   }
