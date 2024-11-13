@@ -1471,6 +1471,9 @@ computeMissingzTermBis( localIndex const q3D,
   // compute J.J^T
   real64 invJJt[3][3] = {{0}};
   LvArray::tensorOps::Rij_eq_AikBjk< 3, 3, 2 >( invJJt, J, J ); // invJJt<-(J.J^T)
+  // Det
+  real64 debugDet = LvArray::tensorOps::determinant< 3 >( invJJt );
+  print("Determinant = %g\n", debugDet);
   LvArray::tensorOps::invert< 3 >( invJJt ); // invJJt<-(J.J^T)^{-1}
   real64 B[3][2] = {{0}}; 
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, invJJt, J );// B <- (J.J^T)^{-1}. J
@@ -1504,6 +1507,9 @@ computeGradPhiBGradzFBis( int const q3Da,
     const int aj = GL_BASIS::TensorProduct2D::linearIndex( qa, j);
     const real64 gja = basisGradientAt( j, qa );
     const real64 gjb = basisGradientAt( j, qb );
+    print("w=%g, gja = %g, gjb =%g \n", w, gja, gjb);
+    for (int k = 0; k < 3; k ++)
+    printf("(B[0][0]*N[0] + B[1][0]*N[1] + B[2][0]*N[2]) = %g, B[0][1]*N[0] + B[1][1]*N[1] + B[2][1]*N[2] = %g\n", B[0][0]*N[0] + B[1][0]*N[1] + B[2][0]*N[2], B[0][1]*N[0] + B[1][1]*N[1] + B[2][1]*N[2]);
     // diagonal terms
     const real64 w1 = w * gja* (B[0][0]*N[0] + B[1][0]*N[1] + B[2][0]*N[2]);
     func( i, jb, w1  );
