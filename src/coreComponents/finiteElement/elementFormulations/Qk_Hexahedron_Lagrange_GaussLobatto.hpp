@@ -1480,7 +1480,7 @@ computeMissingzTermBis( localIndex const q3D,
   real64 AzJmT[3][3] = {{0}};
   AzJmT[2][2] = 1;
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- Az * J^{-T}
-  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, qa, qb, N, AzJmT, func );
+  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, N, AzJmT, func );
 }
 
 
@@ -1493,13 +1493,13 @@ Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeGradPhiBGradzFBis( int const q3Da, 
                         int const q3Db, 
                         int const q3Dc,
-                        int const qa,
-                        int const qb,
+                        int const q2Da,
+                        int const q2Db,
                         real64 const (&N)[3],
                         real64 const (&AzJmT)[3][3],
                         FUNC && func )
 {
-  const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb );
+  const real64 w = GL_BASIS::weight( q2Da )*GL_BASIS::weight( q2Db );
   for( int j=0; j<num1dNodes; j++ )
   {
     const int i = 1; // useless
