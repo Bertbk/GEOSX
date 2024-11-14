@@ -698,7 +698,7 @@ public:
                                     real64 const (&X3D)[8][3],
                                     real64 const (&X2D)[4][3],
                                     real64 const (&N)[3],
-                                    FUNC && func )
+                                    FUNC && func );
   /**
    * @brief computes the matrix B in the case of quasi-stiffness (e.g. for pseudo-acoustic case), defined as J^{-T}A_z J^{-1}/det(J), where
    * J is the Jacobian matrix, and A_z is a zero matrix except on A_z(3,3) = 1.
@@ -774,7 +774,7 @@ public:
                           int const qb,
                           real64 const (&N)[3],
                           real64 const (&AzJmT)[3][3],
-                          FUNC && func )
+                          FUNC && func );
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
