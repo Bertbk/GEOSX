@@ -1478,12 +1478,12 @@ computeMissingzTermBis( localIndex const q3D,
   LvArray::tensorOps::transpose< 3 >( J3D ); // J3D <- Jacobian^T
   LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
   real64 AzJmT[3][3] = {{0}};
-  AzJmT[2][2] = 1;
+  AzJmT[2][2] = sqrtDetJ2D;
   real64 AzN[3];
   AzN[0] = 0;
   AzN[1] = 0;
   AzN[2] = N[2];
-  LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- Az * J^{-T}
+  LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
   computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func );
 }
 
@@ -1521,7 +1521,7 @@ computeGradPhiBGradzFBis( int const q3Da,
     const real64 w2 = w * gjb* (AzJmT[0][1]*AzN[0] + AzJmT[1][1]*AzN[1] + AzJmT[2][1]*AzN[2]) ;
     func( 1, ajc, w2 );
     const real64 w3 = w * gjc* (AzJmT[0][2]*AzN[0] + AzJmT[1][2]*AzN[1] + AzJmT[2][2]*AzN[2]) ;
-    func( 2, abj, w2 );
+    func( 2, abj, w3 );
   }
 }
 
