@@ -693,11 +693,12 @@ public:
   template< typename FUNC >
   GEOS_HOST_DEVICE
   GEOS_FORCE_INLINE
-  static void computeMissingzTermBis( localIndex const q3d,
-                                      localIndex const q,
-                                      real64 const (&X)[4][3],
-                                      real64 const (&N)[3],
-                                      FUNC && func );
+  static void computeMissingzTermBis( localIndex const q3D,
+                                    localIndex const q2D,
+                                    real64 const (&X3D)[8][3],
+                                    real64 const (&X2D)[4][3],
+                                    real64 const (&N)[3],
+                                    FUNC && func )
   /**
    * @brief computes the matrix B in the case of quasi-stiffness (e.g. for pseudo-acoustic case), defined as J^{-T}A_z J^{-1}/det(J), where
    * J is the Jacobian matrix, and A_z is a zero matrix except on A_z(3,3) = 1.
@@ -766,14 +767,14 @@ public:
   GEOS_HOST_DEVICE
   GEOS_FORCE_INLINE
   static void
-  computeGradPhiBGradzFBis( int const q3Da,
-                          int const q3Db,
+  computeGradPhiBGradzFBis( int const q3Da, 
+                          int const q3Db, 
                           int const q3Dc,
                           int const qa,
                           int const qb,
                           real64 const (&N)[3],
-                          real64 const (&B)[3][2],
-                          FUNC && func );
+                          real64 const (&AzJmT)[3][3],
+                          FUNC && func )
 
   /**
    * @brief computes the non-zero contributions of the d.o.f. indexd by q to the
