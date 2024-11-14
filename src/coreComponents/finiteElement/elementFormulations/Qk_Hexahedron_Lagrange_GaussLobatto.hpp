@@ -1484,7 +1484,7 @@ computeMissingzTermBis( localIndex const q3D,
   AzN[1] = 0;
   AzN[2] = N[2];
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
-  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, J3D, func ); //TODO: change J3D with AzJmT
+  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func ); //TODO: change J3D with AzJmT
 }
 
 
