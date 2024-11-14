@@ -333,7 +333,7 @@ public:
         N[2] = sgn* nz / sqrt(nx*nx +ny*ny+nz*nz);
 
         // Compute the boundary term
-        m_finiteElementSpace.template computeMissingzTermBis( q, q2d, xFaceLocal, N, [&] ( int i, int j, real64 val )
+        m_finiteElementSpace.template computeMissingzTermBis( q, q2d, stack.xLocal, xFaceLocal, N, [&] ( int i, int j, real64 val )
         {
           // Check if j is on the face
           bool jIsOnFace = false;
