@@ -1505,9 +1505,7 @@ computeGradPhiBGradzFBis( int const q3Da,
 {
   const real64 w = GL_BASIS::weight( q2Da )*GL_BASIS::weight( q2Db );
   printf("q2Da=%d, q2Db=%d, q3Da=%d, q3Db=%d, q3Dc=%d\n",q2Da,q2Db, q3Da, q3Db, q3Dc);
-  printf("AzJmT[0][0] = %g, AzJmT[0][1] = %g, AzJmT[0][2] = %g \n
-          AzJmT[1][0] = %g, AzJmT[1][1] = %g, AzJmT[1][2] = %g \n
-          AzJmT[2][0] = %g, AzJmT[2][1] = %g, AzJmT[2][2] = %g \n",AzJmT[0][0], AzJmT[0][1], AzJmT[0][2],AzJmT[1][0], AzJmT[1][1], AzJmT[1][2], AzJmT[2][0], AzJmT[2][1], AzJmT[2][2]);
+  printf("AzJmT[0][0] = %g, AzJmT[0][1] = %g, AzJmT[0][2] = %g \n AzJmT[1][0] = %g, AzJmT[1][1] = %g, AzJmT[1][2] = %g \nAzJmT[2][0] = %g, AzJmT[2][1] = %g, AzJmT[2][2] = %g \n",AzJmT[0][0], AzJmT[0][1], AzJmT[0][2],AzJmT[1][0], AzJmT[1][1], AzJmT[1][2], AzJmT[2][0], AzJmT[2][1], AzJmT[2][2]);
   for( int j=0; j<num1dNodes; j++ )
   {
     const int i = 1; // useless
