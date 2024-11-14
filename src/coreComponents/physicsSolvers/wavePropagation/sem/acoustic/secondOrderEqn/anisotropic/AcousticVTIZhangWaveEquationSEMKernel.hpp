@@ -305,18 +305,18 @@ public:
           }
         }
         // Hand made check if the control point belong to the face
-        bool isOnFace = false;
+        bool qIsOnFace = false;
         localIndex q2d= 0;
         for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
         {
           if(m_elemsToNodes(k, q) == m_facesToNodes( f, i ))
           {
-            isOnFace = true;
+            qIsOnFace = true;
             q2d = i;
             break;
           }
         }
-        if(!isOnFace)
+        if(!qIsOnFace)
           continue; 
         // Compute Normal 
         real64 N[3]={0};
@@ -335,18 +335,31 @@ public:
         // Compute the boundary term
         m_finiteElementSpace.template computeMissingzTermBis( q, q2d, xFaceLocal, N, [&] ( int i, int j, real64 val )
         {
-          real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
-          real32 delt = std::fabs( m_vti_delta[k]); // value on control point
-          if( std::fabs( epsi ) < 1e-5 )
-            epsi = 0;
-          if( std::fabs( delt ) < 1e-5 )
-            delt = 0;
-          if( delt > epsi )
-            delt = epsi;
-          real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
-          printf(" m_q_n[m_facesToNodes( %d, %d )] = %d, q=%d, Val = %g\n", f,j, m_facesToNodes( f, j ), q, val);
-          real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta * m_q_n[m_facesToNodes( f, j )];
-          stack.stiffnessVectorLocal_p[q] += localIncrement_p;
+          // Check if j is on the face
+          bool jIsOnFace = false;
+          for( int ipt = 0; ipt < FE_TYPE::numNodesPerFace; ++ipt )
+          {
+            if(m_elemsToNodes(k, j) == m_facesToNodes( f, ipt ))
+            {
+              jIsOnFace = true;
+              break;
+            }
+          }
+          if(jIsOnFace)
+          {
+            real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
+            real32 delt = std::fabs( m_vti_delta[k]); // value on control point
+            if( std::fabs( epsi ) < 1e-5 )
+              epsi = 0;
+            if( std::fabs( delt ) < 1e-5 )
+              delt = 0;
+            if( delt > epsi )
+              delt = epsi;
+            real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+            printf(" m_q_n[m_facesToNodes( %d, %d )] = %d, q=%d, Val = %g\n", f,j, m_facesToNodes( f, j ), q, val);
+            real32 const localIncrement_p = val * stack.invDensity * vti_sqrtDelta * m_q_n[m_elemsToNodes( k, j )];
+            stack.stiffnessVectorLocal_p[q] += localIncrement_p;
+          }
         });
       }
 

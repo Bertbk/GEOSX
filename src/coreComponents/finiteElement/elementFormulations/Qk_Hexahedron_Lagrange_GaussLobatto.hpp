@@ -1450,37 +1450,36 @@ GEOS_FORCE_INLINE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
 computeMissingzTermBis( localIndex const q3D,
-                      localIndex const q,
-                      real64 const (&X)[4][3],
+                      localIndex const q2D,
+                      real64 const (&X3D)[8][3],
+                      real64 const (&X2D)[4][3],
                       real64 const (&N)[3],
                       FUNC && func )
 {
+  //Get local numbering in ref element
   int q3Da, q3Db, q3Dc;
   GL_BASIS::TensorProduct3D::multiIndex( q3D, q3Da, q3Db, q3Dc );
-  int qa, qb;
-  GL_BASIS::TensorProduct2D::multiIndex( q, qa, qb );
+  //Get local numbering in parametrized surface
+  int q2Da, q2Db;
+  GL_BASIS::TensorProduct2D::multiIndex( q2D, q2Da, q2Db );
   // 2D Jacobian transformation
-  real64 J[3][2] = {{0}};
-  jacobianTransformation2d( qa, qb, X, J );
+  real64 J2D[3][2] = {{0}};
+  jacobianTransformation2d( q2Da, q2Db, X2D, J2D );
   // compute J^T.J, using Voigt notation
-  real64 JtJ[3] = {0}; // J^T.J (Voigt notation)
-  JtJ[0] = J[0][0]*J[0][0]+J[1][0]*J[1][0]+J[2][0]*J[2][0];
-  JtJ[1] = J[0][1]*J[0][1]+J[1][1]*J[1][1]+J[2][1]*J[2][1];
-  JtJ[2] = J[0][0]*J[0][1]+J[1][0]*J[1][1]+J[2][0]*J[2][1];
-  real64 const sqrtDetJ = sqrt( LvArray::math::abs( LvArray::tensorOps::symDeterminant< 2 >( JtJ ) ) );
-  // compute J.J^T
-  real64 invJJt[3][3] = {{0}};
-  LvArray::tensorOps::Rij_eq_AikBjk< 3, 3, 2 >( invJJt, J, J ); // invJJt<-(J.J^T)
-  // Det
-  real64 debugDet = LvArray::tensorOps::determinant< 3 >( invJJt );
-  printf("Determinant = %g\n", debugDet);
-  LvArray::tensorOps::invert< 3 >( invJJt ); // invJJt<-(J.J^T)^{-1}
-  real64 B[3][2] = {{0}}; 
-  LvArray::tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, invJJt, J );// B <- (J.J^T)^{-1}. J
-  real64 Az[3][3] = {{0}};
-  Az[2][2] = sqrtDetJ;
-  LvArray::tensorOps::Rij_eq_AikBkj< 3, 2, 3 >( B, Az, B); // B <- sqrtDetJ * Az * (J.J^T)^{-1}. J
-  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, qa, qb, N, B, func );
+  real64 JtJ2D[3] = {0}; // J^T.J (Voigt notation)
+  JtJ2D[0] = J2D[0][0]*J2D[0][0]+J2D[1][0]*J2D[1][0]+J2D[2][0]*J2D[2][0];
+  JtJ2D[1] = J2D[0][1]*J2D[0][1]+J2D[1][1]*J2D[1][1]+J2D[2][1]*J2D[2][1];
+  JtJ2D[2] = J2D[0][0]*J2D[0][1]+J2D[1][0]*J2D[1][1]+J2D[2][0]*J2D[2][1];
+  real64 const sqrtDetJ2D = sqrt( LvArray::math::abs( LvArray::tensorOps::symDeterminant< 2 >( JtJ2D ) ) );
+  //Get 3D jacobian to compute the Trace of the Gradient properly
+  real64 J3D[3][3] = {{0}};
+  jacobianTransformation( q3Da, q3Db, q3Dc, X3D, J3D );
+  tensorOps::transpose< 3 >( J3D ); // J3D <- Jacobian^T
+  LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
+  real64 AzJmT[3][3] = {{0}};
+  AzJmT[2][2] = 1;
+  LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- Az * J^{-T}
+  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, qa, qb, N, AzJmT, func );
 }
 
 
@@ -1496,26 +1495,26 @@ computeGradPhiBGradzFBis( int const q3Da,
                         int const qa,
                         int const qb,
                         real64 const (&N)[3],
-                        real64 const (&B)[3][2],
+                        real64 const (&AzJmT)[3][3],
                         FUNC && func )
 {
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb );
   for( int j=0; j<num1dNodes; j++ )
   {
     const int i = 1; // useless
-    const int jb = GL_BASIS::TensorProduct2D::linearIndex( j, qb);
-    const int aj = GL_BASIS::TensorProduct2D::linearIndex( qa, j);
-    const real64 gja = basisGradientAt( j, qa );
-    const real64 gjb = basisGradientAt( j, qb );
-    printf("w=%g, gja = %g, gjb =%g \n", w, gja, gjb);
-    for (int k = 0; k < 3; k ++)
-    printf("(B[0][0]*N[0] + B[1][0]*N[1] + B[2][0]*N[2]) = %g, B[0][1]*N[0] + B[1][1]*N[1] + B[2][1]*N[2] = %g\n", B[0][0]*N[0] + B[1][0]*N[1] + B[2][0]*N[2], B[0][1]*N[0] + B[1][1]*N[1] + B[2][1]*N[2]);
-    // diagonal terms
-    const real64 w1 = w * gja* (B[0][0]*N[0] + B[1][0]*N[1] + B[2][0]*N[2]);
-    func( i, jb, w1  );
-    //Of diagonal terms
-    const real64 w2 = w * gjb* (B[0][1]*N[0] + B[1][1]*N[1] + B[2][1]*N[2]) ;
-    func( i, aj, w2 );
+    const int jbc = GL_BASIS::TensorProduct2D::linearIndex( j, q3Db, q3Dc);
+    const int ajc = GL_BASIS::TensorProduct2D::linearIndex( q3Da, j, q3Dc);
+    const int abj = GL_BASIS::TensorProduct2D::linearIndex( q3Da, q3Db, j);
+    const real64 gja = basisGradientAt( j, q3Da );
+    const real64 gjb = basisGradientAt( j, q3Db );
+    const real64 gjc = basisGradientAt( j, q3Dc );
+    //Warning, points associated to jbc, ajc and abj MUST be on the surface 
+    const real64 w1 = w * gja* (AzJmT[0][0]*N[0] + AzJmT[1][0]*N[1] + AzJmT[2][0]*N[2]);
+    func( i, jbc, w1  );
+    const real64 w2 = w * gjb* (AzJmT[0][1]*N[0] + AzJmT[1][1]*N[1] + AzJmT[2][1]*N[2]) ;
+    func( i, ajc, w2 );
+    const real64 w3 = w * gjc* (AzJmT[0][2]*N[0] + AzJmT[1][2]*N[1] + AzJmT[2][2]*N[2]) ;
+    func( i, abj, w2 );
   }
 }
 
@@ -1605,7 +1604,7 @@ computeStiffnesszTerm( localIndex const q,
   GL_BASIS::TensorProduct3D::multiIndex( q, qa, qb, qc );
   real64 B[6] = {0};
   real64 J[3][3] = {{0}};
-  computeBzMatrix( qa, qb, qc, X, J, B ); // The only change!
+  computeBzMatrix( qa, qb, qc, X, J, B );
   computeGradPhiBGradPhi( qa, qb, qc, B, func );
 }
 
