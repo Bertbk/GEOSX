@@ -356,7 +356,7 @@ public:
             if( delt > epsi )
               delt = epsi;
             real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
-            printf(" m_q_n[m_facesToNodes( %d, %d )] = %d, q=%d, Val = %g\n", f,j, m_facesToNodes( f, j ), q, val);
+            printf(" m_facesToNodes( %d, %d ) = %d, q=%d, Val = %g\nN[1]=%g, N[2]=%g, N[3]=%g\n", f,j, m_facesToNodes( f, j ), q, val, N[1],N[2],N[3]);
             real32 const localIncrement_p = val * stack.invDensity * vti_sqrtDelta * m_q_n[m_elemsToNodes( k, j )];
             stack.stiffnessVectorLocal_p[q] += localIncrement_p;
           }
