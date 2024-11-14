@@ -1479,8 +1479,12 @@ computeMissingzTermBis( localIndex const q3D,
   LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
   real64 AzJmT[3][3] = {{0}};
   AzJmT[2][2] = 1;
+  real64 AzN[3];
+  AzN[0] = 0;
+  AzN[1] = 0;
+  AzN[2] = N[2];
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- Az * J^{-T}
-  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, N, AzJmT, func );
+  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func );
 }
 
 
@@ -1495,7 +1499,7 @@ computeGradPhiBGradzFBis( int const q3Da,
                         int const q3Dc,
                         int const q2Da,
                         int const q2Db,
-                        real64 const (&N)[3],
+                        real64 const (&AzN)[3],
                         real64 const (&AzJmT)[3][3],
                         FUNC && func )
 {
@@ -1510,12 +1514,12 @@ computeGradPhiBGradzFBis( int const q3Da,
     const real64 gjb = basisGradientAt( j, q3Db );
     const real64 gjc = basisGradientAt( j, q3Dc );
     //Warning, points associated to jbc, ajc and abj MUST be on the surface 
-    const real64 w1 = w * gja* (AzJmT[0][0]*N[0] + AzJmT[1][0]*N[1] + AzJmT[2][0]*N[2]);
-    func( i, jbc, w1  );
-    const real64 w2 = w * gjb* (AzJmT[0][1]*N[0] + AzJmT[1][1]*N[1] + AzJmT[2][1]*N[2]) ;
-    func( i, ajc, w2 );
-    const real64 w3 = w * gjc* (AzJmT[0][2]*N[0] + AzJmT[1][2]*N[1] + AzJmT[2][2]*N[2]) ;
-    func( i, abj, w2 );
+    const real64 w1 = w * gja* (AzJmT[0][0]*AzN[0] + AzJmT[1][0]*AzN[1] + AzJmT[2][0]*AzN[2]);
+    func( 0, jbc, w1  );
+    const real64 w2 = w * gjb* (AzJmT[0][1]*AzN[0] + AzJmT[1][1]*AzN[1] + AzJmT[2][1]*AzN[2]) ;
+    func( 1, ajc, w2 );
+    const real64 w3 = w * gjc* (AzJmT[0][2]*AzN[0] + AzJmT[1][2]*AzN[1] + AzJmT[2][2]*AzN[2]) ;
+    func( 2, abj, w2 );
   }
 }
 
