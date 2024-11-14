@@ -1503,9 +1503,9 @@ computeGradPhiBGradzFBis( int const q3Da,
   for( int j=0; j<num1dNodes; j++ )
   {
     const int i = 1; // useless
-    const int jbc = GL_BASIS::TensorProduct2D::linearIndex( j, q3Db, q3Dc);
-    const int ajc = GL_BASIS::TensorProduct2D::linearIndex( q3Da, j, q3Dc);
-    const int abj = GL_BASIS::TensorProduct2D::linearIndex( q3Da, q3Db, j);
+    const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, q3Db, q3Dc);
+    const int ajc = GL_BASIS::TensorProduct3D::linearIndex( q3Da, j, q3Dc);
+    const int abj = GL_BASIS::TensorProduct3D::linearIndex( q3Da, q3Db, j);
     const real64 gja = basisGradientAt( j, q3Da );
     const real64 gjb = basisGradientAt( j, q3Db );
     const real64 gjc = basisGradientAt( j, q3Dc );
