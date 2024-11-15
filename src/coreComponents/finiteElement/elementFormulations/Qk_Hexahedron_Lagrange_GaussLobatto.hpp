@@ -1478,14 +1478,15 @@ computeMissingzTermBis( localIndex const q3D,
   LvArray::tensorOps::transpose< 3 >( J3D ); // J3D <- Jacobian^T
   LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
   real64 AzJmT[3][3] = {{0}};
-  AzJmT[2][2] = sqrtDetJ2D;
+  Az[2][2] = sqrtDetJ2D;
   real64 AzN[3];
   AzN[0] = 0;
   AzN[1] = 0;
   AzN[2] = N[2];
+  real64 AzJmT[3][3] = {{0}};
   real64 AzJmT22 = AzJmT[2][2];
   real64 truc = J3D[2][2];
-  LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
+  LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, Az, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
   printf("Before : AzJmT[2][2] = %g, J3D[2][2]= %g\nAfter : AzJmT[2][2] = %g, J3D[2][2]= %g\n", AzJmT22, truc, AzJmT[2][2], J3D[2][2]);
 //  printf("Before: J3D[2][2] = %g, Inverted : J3D[2][2] = %g, AzJmT[2][2] = %g, AzN[2]=%g, sqrtDetJ2D=%g, \n",truc, J3D[2][2],AzJmT[2][2], azn, sqrtDetJ2D);
 //  printf("J3D[0][0] = %g, J3D[0][1] = %g, J3D[0][2] = %g\nJ3D[1][0] = %g, J3D[1][1] = %g, J3D[1][2] = %g\nJ3D[2][0] = %g, J3D[2][1] = %g, J3D[2][2] = %g\n", J3D[0][0], J3D[0][1], J3D[0][2], J3D[1][0], J3D[1][1], J3D[1][2], J3D[2][0], J3D[2][1], J3D[2][2]);
