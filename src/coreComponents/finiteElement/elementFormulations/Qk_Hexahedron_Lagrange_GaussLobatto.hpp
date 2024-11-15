@@ -1478,14 +1478,15 @@ computeMissingzTermBis( localIndex const q3D,
   real64 truc = J3D[2][2];
   LvArray::tensorOps::transpose< 3 >( J3D ); // J3D <- Jacobian^T
   LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
-  printf("Before: J3D[2][2] = %g, After : J3D[2][2] = %g\n",truc, J3D[2][2]);
   real64 AzJmT[3][3] = {{0}};
   AzJmT[2][2] = sqrtDetJ2D;
   real64 AzN[3];
   AzN[0] = 0;
   AzN[1] = 0;
   AzN[2] = N[2];
+  real64 azn = AzN[2];
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, AzJmT, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
+  printf("Before: J3D[2][2] = %g, After : J3D[2][2] = %g, AzJmT[2][2] = %g, AzN[2]=%g\n",truc, J3D[2][2],AzJmT[2][2],azn);
   computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func ); //TODO: change J3D with AzJmT
 }
 
