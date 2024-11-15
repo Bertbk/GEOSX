@@ -1484,12 +1484,8 @@ computeMissingzTermBis( localIndex const q3D,
   AzN[1] = 0;
   AzN[2] = N[2];
   real64 AzJmT[3][3] = {{0}};
-
-  real64 AzJmT22 = AzJmT[2][2];
-  real64 truc = J3D[2][2];
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, Az, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
-  printf("Before : AzJmT[2][2] = %g, J3D[2][2]= %g\nAfter : AzJmT[2][2] = %g, J3D[2][2]= %g\n", AzJmT22, truc, AzJmT[2][2], J3D[2][2]);
-  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func ); //TODO: change J3D with AzJmT
+  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func );
 }
 
 
@@ -1509,8 +1505,6 @@ computeGradPhiBGradzFBis( int const q3Da,
                         FUNC && func )
 {
   const real64 w = GL_BASIS::weight( q2Da )*GL_BASIS::weight( q2Db );
-  printf("q2Da=%d, q2Db=%d, q3Da=%d, q3Db=%d, q3Dc=%d\n",q2Da,q2Db, q3Da, q3Db, q3Dc);
-  printf("AzJmT[0][0] = %g, AzJmT[0][1] = %g, AzJmT[0][2] = %g \n AzJmT[1][0] = %g, AzJmT[1][1] = %g, AzJmT[1][2] = %g \nAzJmT[2][0] = %g, AzJmT[2][1] = %g, AzJmT[2][2] = %g \n",AzJmT[0][0], AzJmT[0][1], AzJmT[0][2],AzJmT[1][0], AzJmT[1][1], AzJmT[1][2], AzJmT[2][0], AzJmT[2][1], AzJmT[2][2]);
   for( int j=0; j<num1dNodes; j++ )
   {
     const int i = 1; // useless
