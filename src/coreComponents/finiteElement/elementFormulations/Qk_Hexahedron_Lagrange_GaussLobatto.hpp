@@ -1475,8 +1475,10 @@ computeMissingzTermBis( localIndex const q3D,
   //Get 3D jacobian to compute the Trace of the Gradient properly
   real64 J3D[3][3] = {{0}};
   jacobianTransformation( q3Da, q3Db, q3Dc, X3D, J3D );
+  real64 truc = J3D[2][2];
   LvArray::tensorOps::transpose< 3 >( J3D ); // J3D <- Jacobian^T
   LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
+  printf("Before: J3D[2][2] = %g, After : J3D[2][2] = %g\n",truc, J3D[2][2]);
   real64 AzJmT[3][3] = {{0}};
   AzJmT[2][2] = sqrtDetJ2D;
   real64 AzN[3];
