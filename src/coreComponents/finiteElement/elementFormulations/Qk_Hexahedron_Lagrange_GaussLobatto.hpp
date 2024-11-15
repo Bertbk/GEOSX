@@ -1477,22 +1477,18 @@ computeMissingzTermBis( localIndex const q3D,
   jacobianTransformation( q3Da, q3Db, q3Dc, X3D, J3D );
   LvArray::tensorOps::transpose< 3 >( J3D ); // J3D <- Jacobian^T
   LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
-  real64 AzJmT[3][3] = {{0}};
+  real64 Az[3][3] = {{0}};
   Az[2][2] = sqrtDetJ2D;
   real64 AzN[3];
   AzN[0] = 0;
   AzN[1] = 0;
   AzN[2] = N[2];
   real64 AzJmT[3][3] = {{0}};
+
   real64 AzJmT22 = AzJmT[2][2];
   real64 truc = J3D[2][2];
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, Az, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
   printf("Before : AzJmT[2][2] = %g, J3D[2][2]= %g\nAfter : AzJmT[2][2] = %g, J3D[2][2]= %g\n", AzJmT22, truc, AzJmT[2][2], J3D[2][2]);
-//  printf("Before: J3D[2][2] = %g, Inverted : J3D[2][2] = %g, AzJmT[2][2] = %g, AzN[2]=%g, sqrtDetJ2D=%g, \n",truc, J3D[2][2],AzJmT[2][2], azn, sqrtDetJ2D);
-//  printf("J3D[0][0] = %g, J3D[0][1] = %g, J3D[0][2] = %g\nJ3D[1][0] = %g, J3D[1][1] = %g, J3D[1][2] = %g\nJ3D[2][0] = %g, J3D[2][1] = %g, J3D[2][2] = %g\n", J3D[0][0], J3D[0][1], J3D[0][2], J3D[1][0], J3D[1][1], J3D[1][2], J3D[2][0], J3D[2][1], J3D[2][2]);
-//  printf("AzJmT[0][0] = %g, AzJmT[0][1] = %g, AzJmT[0][2] = %g\nAzJmT[1][0] = %g, AzJmT[1][1] = %g, AzJmT[1][2] = %g\nAzJmT[2][0] = %g, AzJmT[2][1] = %g, AzJmT[2][2] = %g\n", AzJmT[0][0], AzJmT[0][1], AzJmT[0][2], AzJmT[1][0], AzJmT[1][1], AzJmT[1][2], AzJmT[2][0], AzJmT[2][1], AzJmT[2][2]);
-//  printf("Inverted : J3D[2][2] = %g, AzJmT[2][2] = %g, AzN[2]=%g, sqrtDetJ2D=%g, \n",truc, J3D[2][2],AzJmT[2][2], azn, sqrtDetJ2D);
-
   computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func ); //TODO: change J3D with AzJmT
 }
 
