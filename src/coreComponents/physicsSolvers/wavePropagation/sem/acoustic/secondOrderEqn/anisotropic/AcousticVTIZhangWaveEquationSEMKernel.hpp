@@ -313,7 +313,7 @@ public:
             break;
           }
         }
-        if(q2D < 0)
+        if(q2d < 0)
           continue; // move to next face
         // Compute Normal 
         real64 N[3]={0};
