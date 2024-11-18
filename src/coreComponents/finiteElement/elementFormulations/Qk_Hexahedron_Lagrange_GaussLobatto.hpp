@@ -1520,7 +1520,7 @@ computeGradPhiBGradzFBis( int const q3Da,
     const real64 w2 = w * gjb* (AzJmT[0][1]*AzN[0] + AzJmT[1][1]*AzN[1] + AzJmT[2][1]*AzN[2]) ;
     func( i, ajc, w2 );
     const real64 w3 = w * gjc* (AzJmT[0][2]*AzN[0] + AzJmT[1][2]*AzN[1] + AzJmT[2][2]*AzN[2]) ;
-    printf("AzJmT[2][2]*AzN[2] = %g\n", AzJmT[2][2]*AzN[2]);
+    printf("gjc = %g, w=%g, AzJmT[2][2]*AzN[2] = %g, i = %d, abj=%d, \n", gjc, w, AzJmT[2][2]*AzN[2], i, abj);
     func( i, abj, w3 );
   }
 }
