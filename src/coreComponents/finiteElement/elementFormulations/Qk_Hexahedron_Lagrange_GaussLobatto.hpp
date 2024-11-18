@@ -1507,7 +1507,7 @@ computeGradPhiBGradzFBis( int const q3Da,
   const real64 w = GL_BASIS::weight( q2Da )*GL_BASIS::weight( q2Db );
   for( int j=0; j<num1dNodes; j++ )
   {
-    const int i = 1; // useless
+    const int i = GL_BASIS::TensorProduct3D::linearIndex( q3Da, q3Db, q3Dc);
     const int jbc = GL_BASIS::TensorProduct3D::linearIndex( j, q3Db, q3Dc);
     const int ajc = GL_BASIS::TensorProduct3D::linearIndex( q3Da, j, q3Dc);
     const int abj = GL_BASIS::TensorProduct3D::linearIndex( q3Da, q3Db, j);
@@ -1516,11 +1516,11 @@ computeGradPhiBGradzFBis( int const q3Da,
     const real64 gjc = basisGradientAt( j, q3Dc );
     //Warning, points associated to jbc, ajc and abj MUST be on the surface 
     const real64 w1 = w * gja* (AzJmT[0][0]*AzN[0] + AzJmT[1][0]*AzN[1] + AzJmT[2][0]*AzN[2]);
-    func( 0, jbc, w1  );
+    func( i, jbc, w1  ); 
     const real64 w2 = w * gjb* (AzJmT[0][1]*AzN[0] + AzJmT[1][1]*AzN[1] + AzJmT[2][1]*AzN[2]) ;
-    func( 1, ajc, w2 );
+    func( i, ajc, w2 );
     const real64 w3 = w * gjc* (AzJmT[0][2]*AzN[0] + AzJmT[1][2]*AzN[1] + AzJmT[2][2]*AzN[2]) ;
-    func( 2, abj, w3 );
+    func( i, abj, w3 );
   }
 }
 

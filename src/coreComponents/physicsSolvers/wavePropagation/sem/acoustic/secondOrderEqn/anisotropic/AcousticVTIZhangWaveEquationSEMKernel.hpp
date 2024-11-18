@@ -263,7 +263,7 @@ public:
  //     printf("Gradz: elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
    //   printf("Gradz: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[m_elemsToNodes(k, q)], q, m_vti_DofDelta[m_elemsToNodes(k, q)]);
 
-
+      printf("Stiffnessz val = %g, q =%d\n", val, q);
       real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
       real32 const localIncrement_q = -val * stack.invDensity * m_q_n[m_elemsToNodes( k, j )];
@@ -292,7 +292,6 @@ public:
     // For each faces
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
-//        printf("m_elemsToFaces( %d,%d) = %d, m_elemsToNodes(%d, %d) = %d \n", k, iface, m_elemsToFaces( k, iface ), k, q, m_elemsToNodes(k, q));
         localIndex const f = m_elemsToFaces( k, iface );
         // only the four corners of the mesh face are needed to compute the Jacobian
         real64 xFaceLocal[ 4 ][ 3 ];
@@ -304,20 +303,20 @@ public:
             xFaceLocal[a][d] = m_nodeCoords( nodeIndex, d );
           }
         }
-        // Hand made check if the control point belong to the face
+        // Check if the control point "q" lie on the face "f"
         bool qIsOnFace = false;
-        localIndex q2d= 0;
-        for( int i = 0; i < FE_TYPE::numNodesPerFace; ++i )
+        localIndex q2d= 0; // 2D index of the control point
+        for( int iq = 0; iq < FE_TYPE::numNodesPerFace; ++iq )
         {
-          if(m_elemsToNodes(k, q) == m_facesToNodes( f, i ))
+          if(m_elemsToNodes(k, q) == m_facesToNodes( f, iq ))
           {
             qIsOnFace = true;
-            q2d = i;
+            q2d = iq;
             break;
           }
         }
         if(!qIsOnFace)
-          continue; 
+          continue; // move to next face
         // Compute Normal 
         real64 N[3]={0};
         real64 nx = m_faceNormals( f, 0 ), ny = m_faceNormals( f, 1 ), nz = m_faceNormals( f, 2 );
@@ -331,7 +330,7 @@ public:
         N[0] = 0.;//sgn* nx;
         N[1] = 0.;//sgn* ny;
         N[2] = sgn* nz / sqrt(nx*nx +ny*ny+nz*nz);
-
+        //If normal is zero then skip this face
         if(abs(N[2]) < 1e-6)
           continue;
 
@@ -340,7 +339,7 @@ public:
         {
           if(abs(val) > 0)
           {
-            // Check if j is on the face
+            // Check if j (3D index) is on the face f (ie=find its 2D equivalent)
             bool jIsOnFace = false;
             for( int ipt = 0; ipt < FE_TYPE::numNodesPerFace; ++ipt )
             {
@@ -361,8 +360,9 @@ public:
               if( delt > epsi )
                 delt = epsi;
               real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+              printf("Missingq =%d val = %g, q =%d, i=%d\n", val, q, i);
               real32 const localIncrement_p = val * stack.invDensity * vti_sqrtDelta * m_q_n[m_elemsToNodes( k, j )];
-              stack.stiffnessVectorLocal_p[q] += localIncrement_p;
+              stack.stiffnessVectorLocal_p[i] += localIncrement_p;
             }
           }
         });
