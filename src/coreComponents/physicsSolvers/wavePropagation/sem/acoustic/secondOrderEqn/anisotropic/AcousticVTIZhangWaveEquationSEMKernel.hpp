@@ -304,18 +304,16 @@ public:
           }
         }
         // Check if the control point "q" lie on the face "f"
-        bool qIsOnFace = false;
-        localIndex q2d= 0; // 2D index of the control point
+        localIndex q2d= -1; // 2D index of the control point
         for( int iq = 0; iq < FE_TYPE::numNodesPerFace; ++iq )
         {
           if(m_elemsToNodes(k, q) == m_facesToNodes( f, iq ))
           {
-            qIsOnFace = true;
             q2d = iq;
             break;
           }
         }
-        if(!qIsOnFace)
+        if(q2D < 0)
           continue; // move to next face
         // Compute Normal 
         real64 N[3]={0};
@@ -341,11 +339,13 @@ public:
           {
             // Check if j (3D index) is on the face f (ie=find its 2D equivalent)
             bool jIsOnFace = false;
+            int j2d = -1;
             for( int ipt = 0; ipt < FE_TYPE::numNodesPerFace; ++ipt )
             {
               if(m_elemsToNodes(k, j) == m_facesToNodes( f, ipt ))
               {
                 jIsOnFace = true;
+                j2d = ipt;
                 break;
               }
             }
@@ -360,7 +360,7 @@ public:
               if( delt > epsi )
                 delt = epsi;
               real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
-              printf("Missingq =%d val = %g, q =%d, i=%d\n", val, q, i);
+              printf("Missingq =%d val = %g, q =%d, i=%d, j=%d, q2d = %d, j2d = %d\n", val, q, i, q2d, j2d);
               real32 const localIncrement_p = val * stack.invDensity * vti_sqrtDelta * m_q_n[m_elemsToNodes( k, j )];
               stack.stiffnessVectorLocal_p[i] += localIncrement_p;
             }
