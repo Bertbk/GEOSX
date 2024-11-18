@@ -360,7 +360,7 @@ public:
               if( delt > epsi )
                 delt = epsi;
               real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
-              printf("Missingz val = %g, q =%d, j=%d, k = %d, f=%d, iface=%d\n", val, q, j2d, k, f, iface) ;
+              printf("Missingz val = %g, q =%d, j=%d, k = %d, f=%d, iface=%d, N[2]=%g\n", val, q, j2d, k, f, iface, N[2]) ;
               real32 const localIncrement_p = val * stack.invDensity * vti_sqrtDelta * m_q_n[m_elemsToNodes( k, j )];
               stack.stiffnessVectorLocal_p[i] += localIncrement_p;
             }
