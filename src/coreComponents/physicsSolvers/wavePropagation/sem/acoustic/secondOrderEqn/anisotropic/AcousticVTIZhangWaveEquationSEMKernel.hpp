@@ -260,10 +260,7 @@ public:
       if( delt > epsi )
         delt = epsi;
       real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
- //     printf("Gradz: elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-   //   printf("Gradz: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[m_elemsToNodes(k, q)], q, m_vti_DofDelta[m_elemsToNodes(k, q)]);
-      if(abs(val) > 0)
-        printf("Stiffnessz val = %g, q =%d, k =%d\n", val, q,k);
+
       real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta* m_q_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
       real32 const localIncrement_q = -val * stack.invDensity * m_q_n[m_elemsToNodes( k, j )];
@@ -327,7 +324,8 @@ public:
           //Multiply by Az
         N[0] = 0.;//sgn* nx;
         N[1] = 0.;//sgn* ny;
-        N[2] = sgn* nz / sqrt(nx*nx +ny*ny+nz*nz);
+        //Remove signe! !!
+        N[2] =  nz / sqrt(nx*nx +ny*ny+nz*nz); 
         //If normal is zero then skip this face
         if(abs(N[2]) < 1e-6)
           continue;
