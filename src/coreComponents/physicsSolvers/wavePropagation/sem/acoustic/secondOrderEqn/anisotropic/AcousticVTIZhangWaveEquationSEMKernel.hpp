@@ -324,8 +324,7 @@ public:
           //Multiply by Az
         N[0] = 0.;//sgn* nx;
         N[1] = 0.;//sgn* ny;
-        //Remove signe! !!
-        N[2] =  nz / sqrt(nx*nx +ny*ny+nz*nz); 
+        N[2] =  sgn* nz / sqrt(nx*nx +ny*ny+nz*nz); 
         //If normal is zero then skip this face
         if(abs(N[2]) < 1e-6)
           continue;
@@ -333,6 +332,7 @@ public:
         // Compute the boundary term
         m_finiteElementSpace.template computeMissingzTermBis( q, q2d, stack.xLocal, xFaceLocal, N, [&] ( int i, int j, real64 val )
         {
+          val = sgn* val;
           if(abs(val) > 0)
           {
             // Check if j (3D index) is on the face f (ie=find its 2D equivalent)
