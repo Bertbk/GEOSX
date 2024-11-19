@@ -240,10 +240,6 @@ public:
       real32 const localIncrement_q = -val * stack.invDensity * vti_sqrtDelta * m_p_n[m_elemsToNodes( k, j )];
       stack.stiffnessVectorLocal_q[i] += localIncrement_q;
 
-//      printf("Gradxy: elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-//      printf("Gradxy: epsi[%d] = %g, delta[%d] = %g\n", q, m_vti_DofEpsilon[m_elemsToNodes(k, q)], q, m_vti_DofDelta[m_elemsToNodes(k, q)]);
-//      printf("elem_j=%d, elem_k=%d, m_vti_DofEpsilon[%d] = %g\n",j, k, m_elemsToNodes( k, j ), m_vti_DofEpsilon[m_elemsToNodes( k, j )]);
-//      printf("elem_j=%d, elem_k=%d, m_vti_DofDelta[%d] = %g\n",j, k, m_elemsToNodes( k, j ),   m_vti_DofDelta[m_elemsToNodes( k, j )]);
 
     });
 
@@ -347,7 +343,6 @@ public:
                 break;
               }
             }
-            printf("Missingz val = %g, q =%d, j=%d, k = %d, f=%d, iface=%d, N[2]=%g\n", val, q, j2d, k, f, iface, N[2]) ;
             if(jIsOnFace)
             {
               real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
