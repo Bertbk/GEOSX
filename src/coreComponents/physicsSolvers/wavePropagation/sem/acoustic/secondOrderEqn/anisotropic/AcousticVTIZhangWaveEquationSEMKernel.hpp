@@ -343,7 +343,7 @@ public:
                 break;
               }
             }
-            if(jIsOnFace)
+//            if(jIsOnFace)
             {
               real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
               real32 delt = std::fabs( m_vti_delta[k]); // value on control point
