@@ -1516,9 +1516,9 @@ computeGradPhiBGradzFBis( int const q3Da,
     const real64 gjc = basisGradientAt( j, q3Dc );
     //Warning, points associated to jbc, ajc and abj MUST be on the surface 
     const real64 w1 = w * gja* (AzJmT[0][0]*AzN[0] + AzJmT[1][0]*AzN[1] + AzJmT[2][0]*AzN[2]);
-//    func( i, jbc, w1  ); 
+    func( i, jbc, w1  ); 
     const real64 w2 = w * gjb* (AzJmT[0][1]*AzN[0] + AzJmT[1][1]*AzN[1] + AzJmT[2][1]*AzN[2]) ;
-//    func( i, ajc, w2 );
+    func( i, ajc, w2 );
     const real64 w3 = w * gjc* (AzJmT[0][2]*AzN[0] + AzJmT[1][2]*AzN[1] + AzJmT[2][2]*AzN[2]) ;
     func( i, abj, w3 );
   }
