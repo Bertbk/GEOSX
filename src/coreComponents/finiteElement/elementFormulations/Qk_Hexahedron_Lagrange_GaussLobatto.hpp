@@ -1471,14 +1471,16 @@ computeMissingzTermBis( localIndex const q3D,
   JtJ2D[0] = J2D[0][0]*J2D[0][0]+J2D[1][0]*J2D[1][0]+J2D[2][0]*J2D[2][0];
   JtJ2D[1] = J2D[0][1]*J2D[0][1]+J2D[1][1]*J2D[1][1]+J2D[2][1]*J2D[2][1];
   JtJ2D[2] = J2D[0][0]*J2D[0][1]+J2D[1][0]*J2D[1][1]+J2D[2][0]*J2D[2][1];
-  real64 const sqrtDetJ2D = sqrt( LvArray::math::abs( LvArray::tensorOps::symDeterminant< 2 >( JtJ2D ) ) );
+  real64 det2D= LvArray::tensorOps::symDeterminant< 2 >( JtJ2D );
+  real64 const sqrtDetJ2D = sqrt( LvArray::math::abs(det2D) );  
+  real64 sgnDet = det2D > 0 ? 1:-1; //Surface orientation preserved?
   //Get 3D jacobian to compute the Trace of the Gradient properly
   real64 J3D[3][3] = {{0}};
   jacobianTransformation( q3Da, q3Db, q3Dc, X3D, J3D );
   LvArray::tensorOps::transpose< 3 >( J3D ); // J3D <- Jacobian^T
   LvArray::tensorOps::invert< 3 >( J3D ); // J3D <- Jacobian^{-T}
   real64 Az[3][3] = {{0}};
-  Az[2][2] = sqrtDetJ2D;
+  Az[2][2] = sgnDet*sqrtDetJ2D;
   real64 AzJmT[3][3] = {{0}};
   LvArray::tensorOps::Rij_eq_AikBkj< 3, 3, 3 >( AzJmT, Az, J3D); // AzJmT <- sqrtDetJ2D*Az * J^{-T}
   real64 AzN[3]; // Normal vector
