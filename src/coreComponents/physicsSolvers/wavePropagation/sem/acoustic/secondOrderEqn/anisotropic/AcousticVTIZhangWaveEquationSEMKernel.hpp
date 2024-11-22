@@ -331,6 +331,7 @@ public:
 //          val = sgn* val;
           if(abs(val) > 0)
           {
+            printf("val=%g, k=%d, q=%d,f=%d, j=%d, I=%g, J=%g\n", val, k, q, f, j, m_elemsToNodes( k, i ), m_elemsToNodes( k, j ));
             real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
             real32 delt = std::fabs( m_vti_delta[k]); // value on control point
             if( std::fabs( epsi ) < 1e-5 )
