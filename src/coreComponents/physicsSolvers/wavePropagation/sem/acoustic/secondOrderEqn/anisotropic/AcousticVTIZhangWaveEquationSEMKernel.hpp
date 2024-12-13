@@ -264,7 +264,7 @@ public:
     } );
 
     // missing dz term
-/*    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
+/* OLD THAT WORKS   m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
       real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
       real32 delt = std::fabs( m_vti_delta[k]); // value on control point
@@ -281,6 +281,24 @@ public:
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
     } );*/
 
+    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int iVertice, int j, real64 val )
+    {
+      real32 epsi = std::fabs( m_vti_DofEpsilon[iVertice]); // value on k
+      real32 delt = std::fabs( m_vti_DofDelta[iVertice]); // value on 
+      if( std::fabs( epsi ) < 1e-5 )
+        epsi = 0;
+      if( std::fabs( delt ) < 1e-5 )
+        delt = 0;
+      if( delt > epsi )
+        delt = epsi;
+      real32 vti_sqrtDelta = sqrt(1 + 2 *delt);
+
+      real32 const localIncrement_p = -val * stack.invDensity * vti_sqrtDelta * m_q_n[m_elemsToNodes( k, j )];
+      stack.stiffnessVectorLocal_p[i] += localIncrement_p;
+    } );
+
+  // BY FACES (not working)
+  /*
     //k = elem
     // For each faces
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
@@ -345,7 +363,7 @@ public:
             stack.stiffnessVectorLocal_p[i] += localIncrement_p;
           }
         });
-      }
+      }*/
 
   }
 
