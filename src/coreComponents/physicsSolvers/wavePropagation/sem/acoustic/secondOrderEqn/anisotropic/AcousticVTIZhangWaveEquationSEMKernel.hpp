@@ -264,7 +264,7 @@ public:
     } );
 
     // missing dz term
-/* OLD THAT WORKS   m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
+/* OLD THAT WORKS   m_finiteElementSpace.template computeMissingzVolumeTerm( q, stack.xLocal, [&] ( int i, int j, real64 val )
     {
       real32 epsi = std::fabs( m_vti_epsilon[k]); // value on control point
       real32 delt = std::fabs( m_vti_delta[k]); // value on control point
@@ -281,10 +281,11 @@ public:
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
     } );*/
 
-    m_finiteElementSpace.template computeMissingzTerm( q, stack.xLocal, [&] ( int iVertice, int j, real64 val )
+    m_finiteElementSpace.template computeMissingzVolumeTerm( q, stack.xLocal, [&] ( int iVertice, int j, real64 val )
     {
-      real32 epsi = std::fabs( m_vti_DofEpsilon[iVertice]); // value on k
-      real32 delt = std::fabs( m_vti_DofDelta[iVertice]); // value on 
+      //iVertice is the "Qr" index of the vertice in the element (so 0 < iVertice < (r+1)^3)
+      real32 epsi = std::fabs( m_vti_DofEpsilon[m_elemsToNodes(k, iVertice)]); // value on k
+      real32 delt = std::fabs( m_vti_DofDelta[m_elemsToNodes(k, iVertice)]); // value on 
       if( std::fabs( epsi ) < 1e-5 )
         epsi = 0;
       if( std::fabs( delt ) < 1e-5 )
@@ -297,10 +298,11 @@ public:
       stack.stiffnessVectorLocal_p[i] += localIncrement_p;
     } );
 
-  // BY FACES (not working)
+  // 2nd solution: compute the flux term on each element
+  // Didn't work, but keep it...
   /*
-    //k = elem
-    // For each faces
+    //k = elem number
+    // For each faces do...
     for( localIndex iface = 0; iface < m_elemsToFaces.size( 1 ); ++iface )
       {
         localIndex const f = m_elemsToFaces( k, iface );
@@ -314,7 +316,7 @@ public:
             xFaceLocal[a][d] = m_nodeCoords( nodeIndex, d );
           }
         }
-        // Check if the control point "q" lie on the face "f"
+        // Home made check to see if the quadrature point (or DOF or control point) "q" belongs to the face "f"
         localIndex q2d= -1; // 2D index of the control point
         for( int iq = 0; iq < FE_TYPE::numNodesPerFace; ++iq )
         {
@@ -334,19 +336,20 @@ public:
           (m_faceCenters( f, 1 ) - m_elemCenters( k, 1 )) * ny +
           (m_faceCenters( f, 2 ) - m_elemCenters( k, 2 )) * nz
           ) < 0 ? -1 : 1;
-          //Multiply by Az
+          //Multiply by Az = [0,0,0;0,0,0;0,0,1]
         real64 N[3]={0};
         N[0] = 0.;//sgn* nx;
         N[1] = 0.;//sgn* ny;
         N[2] =  sgn* nz / sqrt(nx*nx +ny*ny+nz*nz); 
-        //If normal is zero then skip this face
+        //If normal is zero then skip this face (eg on lateral surface)
         if(abs(N[2]) < 1e-6)
           continue;
 
-        // Compute the boundary term
-        m_finiteElementSpace.template computeMissingzTermBis( q, q2d, stack.xLocal, xFaceLocal, N, [&] ( int i, int j, real64 val )
+       
+        m_finiteElementSpace.template computeMissingzFluxTerm( q, q2d, stack.xLocal, xFaceLocal, N, [&] ( int i, int j, real64 val )
         {
-//          val = sgn* val;
+//          val = sgn* val; //tried it, didn't work
+// Guess is, there is a problem in the orientation of the face...
           if(abs(val) > 0)
           {
             printf("f=%d, val=%g, k=%d, i=%d,j=%d, I=%d, J=%d\n", f, val, k, i, j, m_elemsToNodes( k, i ), m_elemsToNodes( k, j ));

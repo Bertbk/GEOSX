@@ -696,14 +696,14 @@ public:
   template< typename FUNC >
   GEOS_HOST_DEVICE
   GEOS_FORCE_INLINE
-  static void computeMissingzTerm( localIndex const q,
+  static void computeMissingzVolumeTerm( localIndex const q,
                                       real64 const (&X)[8][3],
                                       FUNC && func );
                                       
   template< typename FUNC >
   GEOS_HOST_DEVICE
   GEOS_FORCE_INLINE
-  static void computeMissingzTermBis( localIndex const q3D,
+  static void computeMissingzFluxTerm( localIndex const q3D,
                                     localIndex const q2D,
                                     real64 const (&X3D)[8][3],
                                     real64 const (&X2D)[4][3],
@@ -777,7 +777,7 @@ public:
   GEOS_HOST_DEVICE
   GEOS_FORCE_INLINE
   static void
-  computeGradPhiBGradzFBis( int const q3Da, 
+  computeFluxGradPhiBGradzF( int const q3Da, 
                           int const q3Db, 
                           int const q3Dc,
                           int const qa,
@@ -1398,7 +1398,7 @@ GEOS_HOST_DEVICE
 GEOS_FORCE_INLINE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMissingzTerm( localIndex const q,
+computeMissingzVolumeTerm( localIndex const q,
                       real64 const (&X)[8][3],
                       FUNC && func )
 {
@@ -1433,6 +1433,8 @@ computeGradPhiBGradzF( int const qa,
 {
   const real64 w = GL_BASIS::weight( qa )*GL_BASIS::weight( qb )*GL_BASIS::weight( qc );
 /*OLD (patch qui fonctionnait)
+  // Ceci fonctionnait mais dans le cas où je pouvais calculer (et donner en input) la dérivée en z de delta
+  // Je le garde pour archive :)
   for( int j=0; j<num1dNodes; j++ )
   {
     const int i = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc ); // i = control point q  =abc
@@ -1454,8 +1456,9 @@ computeGradPhiBGradzF( int const qa,
     END OLD
   }
   */
+ // Nouvelle version où delta et epsilon sont Q1
   const int i = GL_BASIS::TensorProduct3D::linearIndex( qa, qb, qc ); // i = control point q  =abc
-  //Coord of the nodes
+  //1D Coord of the nodes
   real64 xa = GL_BASIS::ParentSupportCoord(qa);
   real64 xb = GL_BASIS::ParentSupportCoord(qb);
   real64 xc = GL_BASIS::ParentSupportCoord(qc);
@@ -1471,8 +1474,8 @@ computeGradPhiBGradzF( int const qa,
     for( localIndex k=0; k < LagrangeBasis1::TensorProduct3D::numSupportPoints; k++ )
     {
       localIndex ik = meshIndexToLinearIndex3D(k); // indices in Q_r
-      localIndex k1,k2,k3; // 1D indices
-      LagrangeBasis1::multiIndex(k, k1, k2, k3);
+      localIndex k1,k2,k3; // 1D indices: k1=0 or 1 
+      LagrangeBasis1::multiIndex(k, k1, k2, k3); // split k into each dimension
       real64 dphik1, dphik2, dphik3, phik1, phik2, phik3 = 0;
       dphik1 = LagrangeBasis1::gradientAt( k1, 0 ); // Second argument useless
       dphik2 = LagrangeBasis1::gradientAt( k2, 0 ); // Second argument useless
@@ -1521,7 +1524,7 @@ GEOS_HOST_DEVICE
 GEOS_FORCE_INLINE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeMissingzTermBis( localIndex const q3D,
+computeMissingzFluxTerm( localIndex const q3D,
                       localIndex const q2D,
                       real64 const (&X3D)[8][3],
                       real64 const (&X2D)[4][3],
@@ -1558,7 +1561,7 @@ computeMissingzTermBis( localIndex const q3D,
   AzN[0] = 0;
   AzN[1] = 0;
   AzN[2] = N[2];
-  computeGradPhiBGradzFBis( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func );
+  computeFluxGradPhiBGradzF( q3Da, q3Db, q3Dc, q2Da, q2Db, AzN, AzJmT, func );
 }
 
 
@@ -1568,7 +1571,7 @@ GEOS_HOST_DEVICE
 GEOS_FORCE_INLINE
 void
 Qk_Hexahedron_Lagrange_GaussLobatto< GL_BASIS >::
-computeGradPhiBGradzFBis( int const q3Da, 
+computeFluxGradPhiBGradzF( int const q3Da, 
                         int const q3Db, 
                         int const q3Dc,
                         int const q2Da,
